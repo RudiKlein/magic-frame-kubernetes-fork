@@ -279,4 +279,4 @@ ist nicht erlaubt ohne separate Lizenz.
 
 Für kommerzielle Anfragen: **magicframeapp@gmail.com**
 
-<sub>Größtenteils vibe-coded mit Claude — KI-Pair-Programming als Lern-Beschleuniger.</sub>
+<sub>Vibe-coded mit Claude.</sub>
