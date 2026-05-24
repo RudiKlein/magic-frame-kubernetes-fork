@@ -1,12 +1,8 @@
 <div align="center">
 
-<img src="public/logo.svg" alt="Magic Frame Logo" width="120" height="auto" />
-
-# Magic Frame
+<img src="public/social/og-banner.png" alt="Magic Frame — lokales Glassmorphism-Dashboard für Tablets, Monitore und Bilderrahmen" width="100%" />
 
 [English](README.md) · **Deutsch**
-
-**Lokales Glassmorphism-Dashboard für Tablets, Monitore und digitale Bilderrahmen.**
 
 Läuft komplett im Heimnetz — kein Cloud-Account, keine Domain nötig.
 
