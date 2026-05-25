@@ -100,13 +100,19 @@ cd magic-frame && ./deploy/install.sh
 
 ## Demo
 
+### Editor — drag widgets onto the grid, configure in the inspector
+
 <div align="center">
-
-<img src="public/demo/magic-frame-teaser.gif" alt="Magic Frame editor — create view, drag widgets, configure in the inspector, live sync to displays" width="720" />
-
-<sub>Create a view → drag widgets onto the 24-column grid → configure them in the inspector → save → live-sync pushes to every connected display. <a href="public/demo/magic-frame-preview.mp4">Watch the full ~1 min walkthrough</a>.</sub>
-
+  <img src="public/demo/magic-frame-editor.gif" alt="Magic Frame editor — adding widgets to a view on a 24-column grid" width="720" />
 </div>
+
+### Dashboard — all your views and live system status at a glance
+
+<div align="center">
+  <img src="public/demo/magic-frame-dashboard.gif" alt="Magic Frame dashboard — Welcome screen with view thumbnails and system status strip" width="720" />
+</div>
+
+<sub><a href="public/demo/magic-frame-preview.mp4">Watch the full ~1 min walkthrough</a> (create view → drag widgets → configure inspector → save → live-sync to displays).</sub>
 
 ---
 
