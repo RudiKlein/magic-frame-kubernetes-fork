@@ -166,36 +166,49 @@ export default function WallpaperEngine({
          }}
       ></div>
 
-      {( (images.length > 1 && (config?.intervalSec || 60) > 0) || (config?.showMetadata !== false && currentImage.metadata && Object.keys(currentImage.metadata).length > 0) ) && (
-         <div
-            className={`absolute bottom-0 inset-x-0 z-10 flex flex-row items-center justify-between px-6 py-3 ${(config?.metaBgOpacity ?? 40) > 0 ? "backdrop-blur-md border-t border-white/5" : ""}`}
-            style={{ backgroundColor: `rgba(0,0,0,${(config?.metaBgOpacity ?? 40) / 100})` }}
-         >
-           <div className="flex items-center">
-              {images.length > 1 && intervalMs > 0 && config?.showTimer !== false ? (
-                 <ProgressRing key={currentImage.id} durationMs={intervalMs} />
-              ) : <div />}
+      {(() => {
+         // Bar zeigt sich wenn mindestens eine Seite (Ring ODER Metadata)
+         // tatsächlich gerendert würde. Sind beide leer, fällt sie weg.
+         // Die jeweils leere Seite bleibt als Platzhalter-Div drin, damit
+         // justify-between (links/rechts) stabil bleibt.
+         const showRing =
+            images.length > 1 && intervalMs > 0 && config?.showTimer !== false;
+         const showMeta =
+            config?.showMetadata !== false &&
+            !!currentImage.metadata &&
+            Object.keys(currentImage.metadata).length > 0;
+         if (!showRing && !showMeta) return null;
+         return (
+            <div
+               className={`absolute bottom-0 inset-x-0 z-10 flex flex-row items-center justify-between px-6 py-3 ${(config?.metaBgOpacity ?? 40) > 0 ? "backdrop-blur-md border-t border-white/5" : ""}`}
+               style={{ backgroundColor: `rgba(0,0,0,${(config?.metaBgOpacity ?? 40) / 100})` }}
+            >
+              <div className="flex items-center">
+                 {showRing ? (
+                    <ProgressRing key={currentImage.id} durationMs={intervalMs} />
+                 ) : <div />}
+              </div>
+              <div className="flex flex-col items-end text-right">
+                 {showMeta && currentImage.metadata && (
+                   <div
+                      className="flex flex-col items-end uppercase tracking-[0.15em]"
+                      style={{
+                         fontFamily: `${config?.metaFontFamily || 'Inter'}, sans-serif`,
+                         fontSize: config?.metaFontSize ? `${config.metaFontSize}px` : '12px',
+                         fontWeight: config?.metaFontWeight || 500,
+                         textShadow: config?.metaTextShadow || 'none',
+                         color: config?.metaColor || 'rgba(255,255,255,0.8)'
+                      }}
+                   >
+                      {config?.metaShowDate !== false && currentImage.metadata.dateTaken && <span>{currentImage.metadata.dateTaken}</span>}
+                      {config?.metaShowLocation !== false && currentImage.metadata.locationName && <span>{currentImage.metadata.locationName}</span>}
+                      {config?.metaShowCamera !== false && currentImage.metadata.cameraModel && <span>Shot on {currentImage.metadata.cameraModel}</span>}
+                   </div>
+                 )}
+              </div>
            </div>
-           <div className="flex flex-col items-end text-right">
-              {config?.showMetadata !== false && currentImage.metadata && (Object.keys(currentImage.metadata).length > 0) && (
-                <div
-                   className="flex flex-col items-end uppercase tracking-[0.15em]"
-                   style={{
-                      fontFamily: `${config?.metaFontFamily || 'Inter'}, sans-serif`,
-                      fontSize: config?.metaFontSize ? `${config.metaFontSize}px` : '12px',
-                      fontWeight: config?.metaFontWeight || 500,
-                      textShadow: config?.metaTextShadow || 'none',
-                      color: config?.metaColor || 'rgba(255,255,255,0.8)'
-                   }}
-                >
-                   {config?.metaShowDate !== false && currentImage.metadata.dateTaken && <span>{currentImage.metadata.dateTaken}</span>}
-                   {config?.metaShowLocation !== false && currentImage.metadata.locationName && <span>{currentImage.metadata.locationName}</span>}
-                   {config?.metaShowCamera !== false && currentImage.metadata.cameraModel && <span>Shot on {currentImage.metadata.cameraModel}</span>}
-                </div>
-              )}
-           </div>
-        </div>
-      )}
+         );
+      })()}
     </div>
   );
 }
