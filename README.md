@@ -118,31 +118,31 @@ cd magic-frame && ./deploy/install.sh
 
 ## In the wild
 
-A few real setups from my own home — phone photos, no Photoshop. Same project running on completely different hardware.
+Real-world setups across different hardware. Same project, different layouts, different rooms.
 
 ### Big portrait monitor on the wall
 
 <table>
 <tr>
-<td width="50%"><img src="public/setups/setup-monitor.jpg" alt="Wall-mounted portrait monitor with clock, calendar, notifications and weather forecast" /></td>
+<td width="50%"><img src="public/setups/setup-monitor.jpg" alt="Wall-mounted portrait monitor with clock, two upcoming calendar entries and a 4-day weather forecast over a mountain wallpaper" /></td>
 <td width="50%"><img src="public/setups/setup-notify.jpg" alt="Close-up of notification tiles on the wall monitor at night" /></td>
 </tr>
 <tr>
-<td valign="top"><sub><strong>Full layout:</strong> clock, calendar with upcoming events, three live HA notifications (washing machine, cat reminder, dryer), 4-day weather forecast. Wallpaper rotates from an Immich album in the background.</sub></td>
+<td valign="top"><sub><strong>Info layout:</strong> clock, two upcoming calendar events, current temperature and 4-day weather forecast over a rotating Immich wallpaper. Quiet and glanceable for a hallway, office or bedroom wall.</sub></td>
 <td valign="top"><sub><strong>Notifications close-up:</strong> rule-based tiles that auto-show when something happens (washing machine done, "feed Milou") and auto-hide once acknowledged. Wallpaper keeps running underneath.</sub></td>
 </tr>
 </table>
 
-### Same picture frame, two modes — one tap to switch
+### Picture-frame tablet on a side table
 
 <table>
 <tr>
-<td width="50%"><img src="public/setups/setup-tablet.jpg" alt="Picture-frame tablet in clean mode — just wallpaper and a tiny clock" /></td>
-<td width="50%"><img src="public/setups/setup-ha-entitaet.jpg" alt="Same picture frame with HA buttons and entity tiles toggled visible" /></td>
+<td width="50%"><img src="public/setups/setup-tablet.jpg" alt="Small picture-frame tablet on a side table with HA scene buttons, a clock and the current weather" /></td>
+<td width="50%"><img src="public/setups/setup-ha-entitaet.jpg" alt="The same picture frame with HA buttons and entity tiles toggled visible" /></td>
 </tr>
 <tr>
-<td valign="top"><sub><strong>Frame mode:</strong> a small tablet in a real photo-frame mount on the side table. Just the wallpaper, a tiny clock and a couple of subtle notifications when relevant.</sub></td>
-<td valign="top"><sub><strong>Dashboard mode (same device):</strong> tap the toggle button → HA scene buttons (lowboard, "only good vibes", access point, red) and entity tiles (living-room door, air purifier) fade in. Tap again to go back to frame mode.</sub></td>
+<td valign="top"><sub><strong>Scene-button layout:</strong> a small tablet in a real photo-frame mount on the side table. Quick-access HA buttons (lights, "only good vibes", air purifier, …), small clock, current temperature, rotating wallpaper underneath.</sub></td>
+<td valign="top"><sub><strong>HA dashboard mode (same device):</strong> alternate layout on the same hardware — HA scene buttons (lowboard, "only good vibes", access point, red) and entity tiles (living-room door, air purifier). Tap the toggle to swap back to the frame layout.</sub></td>
 </tr>
 </table>
 

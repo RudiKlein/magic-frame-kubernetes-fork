@@ -118,31 +118,31 @@ cd magic-frame && ./deploy/install.sh
 
 ## In der Wildbahn
 
-Ein paar echte Setups bei mir zuhause — Handyfotos, kein Photoshop. Gleiches Projekt auf komplett unterschiedlicher Hardware.
+Echte Setups auf unterschiedlicher Hardware. Gleiches Projekt, andere Layouts, andere Räume.
 
 ### Großer Portrait-Monitor an der Wand
 
 <table>
 <tr>
-<td width="50%"><img src="public/setups/setup-monitor.jpg" alt="Wandmontierter Portrait-Monitor mit Uhr, Kalender, Notifications und Wetter-Vorhersage" /></td>
+<td width="50%"><img src="public/setups/setup-monitor.jpg" alt="Wandmontierter Portrait-Monitor mit Uhr, zwei anstehenden Kalender-Terminen und 4-Tage-Wettervorhersage vor Berg-Wallpaper" /></td>
 <td width="50%"><img src="public/setups/setup-notify.jpg" alt="Notification-Tiles am Wand-Monitor in der Nacht — Close-up" /></td>
 </tr>
 <tr>
-<td valign="top"><sub><strong>Voll bestückt:</strong> Uhr, Kalender mit anstehenden Terminen, drei Live-HA-Notifications (Waschmaschine, Katzen-Erinnerung, Trockner), 4-Tage-Wettervorhersage. Wallpaper rotiert aus einem Immich-Album im Hintergrund.</sub></td>
+<td valign="top"><sub><strong>Info-Layout:</strong> Uhr, zwei anstehende Kalender-Termine, aktuelle Temperatur und 4-Tage-Wettervorhersage über einem rotierenden Immich-Wallpaper. Ruhig und gut auf einen Blick lesbar — ideal für Flur, Büro oder Schlafzimmer-Wand.</sub></td>
 <td valign="top"><sub><strong>Notifications im Detail:</strong> regelbasierte Tiles die automatisch erscheinen wenn was passiert (Waschmaschine fertig, „Milou füttern") und sich wieder verstecken sobald's quittiert wurde. Das Wallpaper läuft drunter weiter.</sub></td>
 </tr>
 </table>
 
-### Derselbe Bilderrahmen, zwei Modi — ein Tap zum Umschalten
+### Bilderrahmen-Tablet auf dem Beistelltisch
 
 <table>
 <tr>
-<td width="50%"><img src="public/setups/setup-tablet.jpg" alt="Bilderrahmen-Tablet im Clean-Modus — nur Wallpaper und kleine Uhr" /></td>
+<td width="50%"><img src="public/setups/setup-tablet.jpg" alt="Kleines Bilderrahmen-Tablet auf dem Beistelltisch mit HA-Szenen-Buttons, Uhr und aktuellem Wetter" /></td>
 <td width="50%"><img src="public/setups/setup-ha-entitaet.jpg" alt="Derselbe Bilderrahmen mit eingeblendeten HA-Buttons und Entity-Tiles" /></td>
 </tr>
 <tr>
-<td valign="top"><sub><strong>Bilderrahmen-Modus:</strong> ein kleines Tablet in echter Bilderrahmen-Halterung auf dem Beistelltisch. Nur das Wallpaper, eine dezente Uhr und wenn relevant ein paar leise Notifications.</sub></td>
-<td valign="top"><sub><strong>Dashboard-Modus (selbes Gerät):</strong> Toggle-Button antippen → HA-Szenen-Buttons (Lowboard, „Only good Vibes", Access Point, Red) und Entity-Tiles (Wohnzimmer-Tür, Luftreiniger) blenden sich ein. Nochmal tippen → zurück in den Bilderrahmen-Modus.</sub></td>
+<td valign="top"><sub><strong>Szenen-Button-Layout:</strong> ein kleines Tablet in echter Bilderrahmen-Halterung auf dem Beistelltisch. Schnellzugriff-HA-Buttons (Lichter, „Only good Vibes", Luftreiniger, …), dezente Uhr, aktuelles Wetter, rotierendes Wallpaper drunter.</sub></td>
+<td valign="top"><sub><strong>HA-Dashboard-Modus (selbes Gerät):</strong> alternatives Layout auf derselben Hardware — HA-Szenen-Buttons (Lowboard, „Only good Vibes", Access Point, Red) und Entity-Tiles (Wohnzimmer-Tür, Luftreiniger). Toggle antippen → zurück ins Bilderrahmen-Layout.</sub></td>
 </tr>
 </table>
 
