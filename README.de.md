@@ -284,11 +284,12 @@ cd magic-frame
 ./deploy/install.sh        # zieht latest + rebuildet, idempotent, Daten + Secrets bleiben
 ```
 
-> **Achtung für frühe v1.0.x-Installer:** Wenn `git pull` mit `Need to specify how to reconcile divergent branches` abbricht, ist dein Clone von vor einem der frühen Force-Pushes (History-Cleanup). Einmalig ausführen:
+> **Achtung für frühe v1.0.x-Installer:** Wenn `git pull` mit `Need to specify how to reconcile divergent branches` abbricht oder `git fetch` mit `would clobber existing tag v1.0.0` aussteigt, ist dein Clone von vor einem der Launch-Week-History-Rewrites (Co-Author-Scrub, CLAUDE.md-Scrub, v1.0.1-Retag). Einmalige Recovery:
 > ```bash
-> git fetch origin && git reset --hard origin/main
+> git fetch --force --tags origin
+> git reset --hard origin/main
 > ```
-> Danach wieder `./deploy/install.sh`. `.env`, Datenbank und hochgeladene Custom-Module bleiben unberührt — die liegen nicht in Git. Ab v1.0.2 handhabt `install.sh` das automatisch.
+> Danach wieder `./deploy/install.sh`. `.env`, Datenbank und hochgeladene Custom-Module bleiben unberührt — die liegen nicht in Git. Ab v1.0.2 macht das install-Skript das automatisch.
 
 Backup der Datenbank:
 ```bash

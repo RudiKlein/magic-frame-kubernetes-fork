@@ -284,11 +284,12 @@ cd magic-frame
 ./deploy/install.sh        # pulls latest + rebuilds, idempotent, data + secrets stay
 ```
 
-> **Heads-up for early v1.0.x adopters:** if `git pull` fails with `Need to specify how to reconcile divergent branches`, your clone is from before one of the early force-pushes (history cleanup). Run once:
+> **Heads-up for early v1.0.x adopters:** if `git pull` fails with `Need to specify how to reconcile divergent branches`, or `git fetch` aborts with `would clobber existing tag v1.0.0`, your clone is from before the launch-week history rewrites (Co-Author scrub, CLAUDE.md scrub, v1.0.1 retag). One-time recovery:
 > ```bash
-> git fetch origin && git reset --hard origin/main
+> git fetch --force --tags origin
+> git reset --hard origin/main
 > ```
-> Then re-run `./deploy/install.sh`. Your `.env`, database, and uploaded custom modules are untouched — they don't live in git. From v1.0.2 onwards `install.sh` handles this automatically.
+> Then re-run `./deploy/install.sh`. Your `.env`, database, and uploaded custom modules are untouched — they don't live in git. From v1.0.2 onwards the install script does this automatically.
 
 Database backup:
 ```bash
