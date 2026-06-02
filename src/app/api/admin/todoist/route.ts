@@ -19,7 +19,7 @@ export async function GET() {
     if (cfg.apiToken) {
       try {
         const list = await listProjects();
-        projects = list.map((p) => ({ id: p.id, name: p.name, isInbox: p.is_inbox_project }));
+        projects = list.map((p) => ({ id: p.id, name: p.name, isInbox: p.inbox_project }));
         connected = true;
       } catch (e: any) {
         error = e?.message ?? "Verbindung fehlgeschlagen";
@@ -48,10 +48,11 @@ export async function POST(req: NextRequest) {
       await setTodoistConfig({ apiToken: "" });
       return NextResponse.json({ ok: true, cleared: true });
     }
-    const ok = await verifyToken(token);
-    if (!ok) {
+    const result = await verifyToken(token);
+    if (!result.ok) {
+      const detail = result.message || "Todoist hat den Token abgelehnt.";
       return NextResponse.json(
-        { error: "Token wurde nicht akzeptiert (401). Bitte API-Token in Todoist neu erzeugen." },
+        { error: result.status ? `${detail} (HTTP ${result.status})` : detail },
         { status: 400 },
       );
     }

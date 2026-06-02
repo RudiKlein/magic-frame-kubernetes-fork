@@ -17,7 +17,7 @@ type Ctx = { params: Promise<{ projectId: string }> };
 export async function GET(_: NextRequest, ctx: Ctx) {
   try {
     const { projectId } = await ctx.params;
-    if (!/^\d+$/.test(projectId)) {
+    if (!/^[0-9A-Za-z]+$/.test(projectId)) {
       return NextResponse.json({ error: "Invalid projectId" }, { status: 400 });
     }
     const tasks = await listTasks(projectId);
@@ -29,7 +29,7 @@ export async function GET(_: NextRequest, ctx: Ctx) {
         priority: t.priority,
         due: t.due ?? null,
         labels: t.labels ?? [],
-        isCompleted: t.is_completed,
+        isCompleted: t.checked,
       })),
     });
   } catch (err: any) {
@@ -44,7 +44,7 @@ export async function GET(_: NextRequest, ctx: Ctx) {
 export async function POST(req: NextRequest, ctx: Ctx) {
   try {
     const { projectId } = await ctx.params;
-    if (!/^\d+$/.test(projectId)) {
+    if (!/^[0-9A-Za-z]+$/.test(projectId)) {
       return NextResponse.json({ error: "Invalid projectId" }, { status: 400 });
     }
     const body = await req.json();

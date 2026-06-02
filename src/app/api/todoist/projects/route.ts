@@ -16,7 +16,7 @@ export async function GET() {
       projects: list.map((p) => ({
         id: p.id,
         name: p.name,
-        isInbox: !!p.is_inbox_project,
+        isInbox: !!p.inbox_project,
         parentId: p.parent_id,
       })),
     });

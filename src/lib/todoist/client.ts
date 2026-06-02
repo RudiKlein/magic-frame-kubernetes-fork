@@ -1,15 +1,29 @@
 import "server-only";
 import { getTodoistConfig } from "./store";
 
-const TODOIST_BASE = "https://api.todoist.com/rest/v2";
+// Todoist unified API v1. The old REST v2 was sunset by Todoist and now
+// returns HTTP 410 Gone — see issue #14. Auth is unchanged (Bearer token),
+// but list endpoints are paginated and a few field names changed.
+const TODOIST_BASE = "https://api.todoist.com/api/v1";
 
 export type TodoistProject = {
   id: string;
   name: string;
   color: string;
   is_favorite: boolean;
-  is_inbox_project?: boolean;
+  inbox_project?: boolean;
   parent_id: string | null;
+};
+
+// v1's `due` is an open object; it always carries `date`/`string`, and may
+// carry `datetime` when the task has a time. All fields optional on purpose.
+export type TodoistDue = {
+  date?: string;
+  datetime?: string;
+  string?: string;
+  timezone?: string | null;
+  lang?: string;
+  is_recurring?: boolean;
 };
 
 export type TodoistTask = {
@@ -17,13 +31,12 @@ export type TodoistTask = {
   project_id: string;
   content: string;
   description?: string;
-  is_completed: boolean;
+  checked: boolean; // v1: was `is_completed` in REST v2
   priority: 1 | 2 | 3 | 4; // 1 = lowest, 4 = highest (P1)
-  due?: { date?: string; datetime?: string; string?: string; is_recurring?: boolean } | null;
+  due?: TodoistDue | null;
   labels?: string[];
-  order?: number;
-  created_at?: string;
-  url?: string;
+  child_order?: number;
+  added_at?: string;
 };
 
 class TodoistError extends Error {
@@ -32,6 +45,9 @@ class TodoistError extends Error {
     this.name = "TodoistError";
   }
 }
+
+// v1 list responses: { results: [...], next_cursor: string | null }
+type Paginated<T> = { results: T[]; next_cursor: string | null };
 
 async function call<T>(
   path: string,
@@ -63,22 +79,58 @@ async function call<T>(
   return data as T;
 }
 
-/** Verifiziert den Token (lädt nur ein Projekt — leichtester Endpoint). */
-export async function verifyToken(token: string): Promise<boolean> {
+/**
+ * v1 list endpoints are paginated ({ results, next_cursor }). Follow the
+ * cursor until it's null and return the flat list. limit=200 is the max,
+ * which keeps round-trips low for typical accounts.
+ */
+async function collectPaginated<T>(path: string, token?: string): Promise<T[]> {
+  const out: T[] = [];
+  let cursor: string | null = null;
+  do {
+    const sep = path.includes("?") ? "&" : "?";
+    const url: string =
+      `${path}${sep}limit=200` +
+      (cursor ? `&cursor=${encodeURIComponent(cursor)}` : "");
+    const page: Paginated<T> = await call<Paginated<T>>(url, {
+      token,
+      method: "GET",
+    });
+    if (Array.isArray(page.results)) out.push(...page.results);
+    cursor = page.next_cursor ?? null;
+  } while (cursor);
+  return out;
+}
+
+/**
+ * Verifiziert den Token (lädt eine Seite Projekte — leichtester Endpoint).
+ * Gibt den echten Status/Fehlertext zurück, damit die UI nicht pauschal
+ * "401, Token neu erzeugen" behauptet (siehe issue #14).
+ */
+export async function verifyToken(
+  token: string,
+): Promise<{ ok: boolean; status?: number; message?: string }> {
   try {
-    await call<TodoistProject[]>("/projects", { token, method: "GET" });
-    return true;
-  } catch {
-    return false;
+    await call<Paginated<TodoistProject>>("/projects?limit=1", {
+      token,
+      method: "GET",
+    });
+    return { ok: true };
+  } catch (e) {
+    if (e instanceof TodoistError)
+      return { ok: false, status: e.status, message: e.message };
+    return { ok: false };
   }
 }
 
 export async function listProjects(): Promise<TodoistProject[]> {
-  return call<TodoistProject[]>("/projects");
+  return collectPaginated<TodoistProject>("/projects");
 }
 
 export async function listTasks(projectId: string): Promise<TodoistTask[]> {
-  return call<TodoistTask[]>(`/tasks?project_id=${encodeURIComponent(projectId)}`);
+  return collectPaginated<TodoistTask>(
+    `/tasks?project_id=${encodeURIComponent(projectId)}`,
+  );
 }
 
 export async function createTask(params: {
