@@ -54,10 +54,13 @@ services:
       context: ./caddy
       dockerfile: Dockerfile
     restart: unless-stopped
+    # Host-Ports. Default 80/443, überschreibbar via .env (HTTP_PORT / HTTPS_PORT)
+    # falls die Standard-Ports auf dem Host belegt sind. Nicht gesetzte Variablen
+    # fallen auf 80/443 zurück — bestehende Installationen ändern sich also nicht.
     ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+      - "${HTTPS_PORT:-443}:443/udp"
       # Admin-API: nur an localhost binden — kein Remote-Zugriff erwünscht.
       - "127.0.0.1:2019:2019"
     volumes:
