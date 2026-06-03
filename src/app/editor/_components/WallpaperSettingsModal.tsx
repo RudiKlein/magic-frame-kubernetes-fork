@@ -357,6 +357,22 @@ export default function WallpaperSettingsModal({
                       {t("Ken Burns ist effektvoll, aber auf alten TV-Browsern (Tizen) spürbar schwerer. Bei Stottern auf Crossfade oder Hart wechseln.")}
                    </p>
                 </div>
+                <div className="mt-1">
+                   <label className="text-sm font-medium text-white/80 block mb-2">{t("Bildanzeige")}</label>
+                   <select
+                      value={wallpaper.fit ?? "cover"}
+                      onChange={(e) => setWallpaper({ ...wallpaper, fit: e.target.value as "cover" | "contain" | "fill" | "none" })}
+                      className="w-full bg-black border border-white/10 text-white text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500"
+                   >
+                      <option value="cover">{t("Füllen (Ausschnitt, Standard)")}</option>
+                      <option value="contain">{t("Einpassen (ganzes Bild)")}</option>
+                      <option value="fill">{t("Strecken (verzerrt)")}</option>
+                      <option value="none">{t("Zentriert (Originalgröße)")}</option>
+                   </select>
+                   <p className="text-[11px] text-white/40 mt-1">
+                      {t("Füllen schneidet Ränder ab. Einpassen zeigt das ganze Bild ohne Beschneiden — gut für Hochformat-Fotos.")}
+                   </p>
+                </div>
                 <label className="flex items-center gap-3 cursor-pointer group mt-1">
                    <div className="relative">
                       <input

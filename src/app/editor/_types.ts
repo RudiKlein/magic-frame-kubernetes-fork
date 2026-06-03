@@ -104,6 +104,7 @@ export interface WallpaperConfig {
   gradientBottom?: number;
   zoomEffect?: boolean;
   transitionEffect?: "crossfade" | "kenburns" | "slide" | "none";
+  fit?: "cover" | "contain" | "fill" | "none";
   showTimer?: boolean;
 }
 

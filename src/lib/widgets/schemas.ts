@@ -233,6 +233,9 @@ export const wallpaperSchema = z
     query: z.string().optional(),
     intervalSec: z.number().optional(),
     showMetadata: z.boolean().optional(),
+    // Wie das Bild skaliert wird (issue #17). cover = Fill (default, croppt),
+    // contain = Fit, fill = Stretch, none = Center.
+    fit: z.enum(["cover", "contain", "fill", "none"]).optional(),
   })
   .passthrough();
 

@@ -24,6 +24,16 @@ function resolveTransition(config: any): TransitionKind {
   return "crossfade";
 }
 
+// object-fit-Modus fürs Wallpaper (issue #17). Default `cover` = bisheriges
+// Verhalten (füllt den Screen, schneidet Ränder ab). Die anderen Modi geben
+// Nutzern Kontrolle, damit z.B. keine Köpfe abgeschnitten werden.
+const WALLPAPER_FIT: Record<string, string> = {
+  cover: "object-cover", // Fill
+  contain: "object-contain", // Fit — ganzes Bild, ggf. Balken
+  fill: "object-fill", // Stretch — verzerrt
+  none: "object-none object-center", // Center — Originalgröße, zentriert
+};
+
 export default function WallpaperEngine({
   config,
   dashboardId = "1"
@@ -105,6 +115,7 @@ export default function WallpaperEngine({
 
   const intervalMs = (config?.intervalSec || 60) * 1000;
   const transition = resolveTransition(config);
+  const fitClass = WALLPAPER_FIT[config?.fit as string] ?? "object-cover";
 
   useEffect(() => {
     if (!isReady || images.length <= 1) return;
@@ -136,16 +147,16 @@ export default function WallpaperEngine({
   return (
     <div className="absolute inset-0 overflow-hidden bg-black z-0">
       {transition === "kenburns" ? (
-        <KenBurnsSlot image={currentImage} intervalMs={intervalMs} />
+        <KenBurnsSlot image={currentImage} intervalMs={intervalMs} fitClass={fitClass} />
       ) : transition === "none" ? (
         <img
           src={currentImage.url}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover"
+          className={`absolute inset-0 w-full h-full ${fitClass}`}
           decoding="async"
         />
       ) : (
-        <TwoSlotTransition image={currentImage} mode={transition} />
+        <TwoSlotTransition image={currentImage} mode={transition} fitClass={fitClass} />
       )}
 
       {/* Overlays */}
@@ -228,7 +239,7 @@ export default function WallpaperEngine({
 
 // Ken-Burns (langsamer Zoom + Opacity-Crossfade) — via Framer-Motion weil
 // die Scale-Animation über viele Sekunden läuft und Exit-Animation braucht.
-function KenBurnsSlot({ image, intervalMs }: { image: WallpaperData; intervalMs: number }) {
+function KenBurnsSlot({ image, intervalMs, fitClass }: { image: WallpaperData; intervalMs: number; fitClass: string }) {
   return (
     <AnimatePresence initial={false}>
       <motion.img
@@ -241,7 +252,7 @@ function KenBurnsSlot({ image, intervalMs }: { image: WallpaperData; intervalMs:
           opacity: { duration: 1.5, ease: "easeInOut" },
           scale: { duration: Math.min(intervalMs / 1000 + 1.5, 30), ease: "linear" },
         }}
-        className="absolute inset-0 w-full h-full object-cover"
+        className={`absolute inset-0 w-full h-full ${fitClass}`}
         decoding="async"
       />
     </AnimatePresence>
@@ -257,7 +268,7 @@ function KenBurnsSlot({ image, intervalMs }: { image: WallpaperData; intervalMs:
 // during a transition (which Tizen renders as a hard cut). slotB initially
 // shows the same image as slotA so the very first crossfade still has
 // something to fade from.
-function TwoSlotTransition({ image, mode }: { image: WallpaperData; mode: "crossfade" | "slide" }) {
+function TwoSlotTransition({ image, mode, fitClass }: { image: WallpaperData; mode: "crossfade" | "slide"; fitClass: string }) {
   const [slotA, setSlotA] = useState<WallpaperData>(image);
   const [slotB, setSlotB] = useState<WallpaperData>(image);
   const [active, setActive] = useState<"A" | "B">("A");
@@ -354,14 +365,14 @@ function TwoSlotTransition({ image, mode }: { image: WallpaperData; mode: "cross
       <img
         src={slotA.url}
         alt=""
-        className="absolute inset-0 w-full h-full object-cover"
+        className={`absolute inset-0 w-full h-full ${fitClass}`}
         style={slotStyle("A")}
         decoding="async"
       />
       <img
         src={slotB.url}
         alt=""
-        className="absolute inset-0 w-full h-full object-cover"
+        className={`absolute inset-0 w-full h-full ${fitClass}`}
         style={slotStyle("B")}
         decoding="async"
       />
