@@ -18,6 +18,7 @@ import TimerWidget from "@/components/widgets/TimerWidget";
 import MessagesWidget from "@/components/widgets/MessagesWidget";
 import ShoppingListWidget from "@/components/widgets/ShoppingListWidget";
 import TodosWidget from "@/components/widgets/TodosWidget";
+import ImageWidget from "@/components/widgets/ImageWidget";
 import { CustomWidget } from "@/lib/modules/runtime";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
@@ -225,6 +226,7 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
     if (type === 'MessagesWidget.tsx') return <MessagesWidget config={config} dashboardId={dashboardId} />;
     if (type === 'ShoppingListWidget.tsx') return <ShoppingListWidget config={config} />;
     if (type === 'TodosWidget.tsx') return <TodosWidget config={config} />;
+    if (type === 'ImageWidget.tsx') return <ImageWidget config={config} />;
     if (type === 'CalendarWidget.tsx') return <CalendarWidget
         config={config}
         onVisibilityChange={(isVisible) => setAutoHiddenWidgets(prev => prev[id] === !isVisible ? prev : {...prev, [id]: !isVisible})}

@@ -60,6 +60,7 @@ const WIDGET_CATALOG: {
   { type: "MessagesWidget.tsx", label: "Nachrichten", icon: <MessageSquare size={16} /> },
   { type: "ShoppingListWidget.tsx", label: "Einkaufsliste", icon: <ShoppingCart size={16} /> },
   { type: "TodosWidget.tsx", label: "Todos", icon: <ClipboardList size={16} /> },
+  { type: "ImageWidget.tsx", label: "Bild", icon: <ImageIcon size={16} /> },
 ];
 
 const WIDGET_ACCENT: Record<string, { hex: string; glow: string; tint: string }> = {
@@ -71,6 +72,7 @@ const WIDGET_ACCENT: Record<string, { hex: string; glow: string; tint: string }>
   "ButtonWidget.tsx":          { hex: "#f59e0b", glow: "rgba(245,158,11,0.25)",  tint: "rgba(245,158,11,0.12)"  }, // amber
   "TimerWidget.tsx":           { hex: "#10b981", glow: "rgba(16,185,129,0.25)",  tint: "rgba(16,185,129,0.12)"  }, // emerald
   "MessagesWidget.tsx":        { hex: "#d946ef", glow: "rgba(217,70,239,0.25)",  tint: "rgba(217,70,239,0.12)"  }, // fuchsia
+  "ImageWidget.tsx":           { hex: "#a855f7", glow: "rgba(168,85,247,0.25)",  tint: "rgba(168,85,247,0.12)"  }, // purple
   "ShoppingListWidget.tsx":    { hex: "#eab308", glow: "rgba(234,179,8,0.25)",   tint: "rgba(234,179,8,0.12)"   }, // yellow
   "TodosWidget.tsx":           { hex: "#6366f1", glow: "rgba(99,102,241,0.25)",  tint: "rgba(99,102,241,0.12)"  }, // indigo
 };
@@ -268,6 +270,14 @@ function widgetSkeletonFor(type: string, accentHex: string): React.ReactNode {
         </div>
       );
 
+    case "ImageWidget.tsx":
+      // Single framed image.
+      return (
+        <div className="w-full h-full p-[8%] overflow-hidden">
+          <div className="w-full h-full rounded-lg" style={{ backgroundColor: dim }} />
+        </div>
+      );
+
     case "ShoppingListWidget.tsx":
     case "TodosWidget.tsx":
       // List rows: checkbox square + text line.
@@ -313,6 +323,8 @@ function widgetIconFor(type: string, size = 12): React.ReactNode {
       return <TimerIcon size={size} />;
     case "MessagesWidget.tsx":
       return <MessageSquare size={size} />;
+    case "ImageWidget.tsx":
+      return <ImageIcon size={size} />;
     case "ShoppingListWidget.tsx":
       return <ShoppingCart size={size} />;
     case "TodosWidget.tsx":

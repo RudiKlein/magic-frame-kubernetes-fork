@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, ExternalLink, Trash2, ArrowRight, Monitor, Smartphone, Pencil, Copy, Clock as ClockIcon, CloudSun, Calendar as CalendarIcon, Zap, Bell, Power, Timer as TimerIcon, MessageSquare, ShoppingCart, ClipboardList } from "lucide-react";
+import { Plus, ExternalLink, Trash2, ArrowRight, Monitor, Smartphone, Pencil, Copy, Clock as ClockIcon, CloudSun, Calendar as CalendarIcon, Zap, Bell, Power, Timer as TimerIcon, MessageSquare, ShoppingCart, ClipboardList, Image as ImageIcon } from "lucide-react";
 import { useT } from "@/lib/i18n/LocaleProvider";
 
 type Orientation = "portrait" | "landscape";
@@ -21,6 +21,7 @@ const WIDGET_META: Record<string, { color: string; Icon: any }> = {
   "MessagesWidget.tsx":        { color: "rgba(217,70,239,0.55)",  Icon: MessageSquare },  // fuchsia
   "ShoppingListWidget.tsx":    { color: "rgba(234,179,8,0.55)",   Icon: ShoppingCart },   // yellow
   "TodosWidget.tsx":           { color: "rgba(99,102,241,0.55)",  Icon: ClipboardList },  // indigo
+  "ImageWidget.tsx":           { color: "rgba(168,85,247,0.55)",  Icon: ImageIcon },      // purple
 };
 
 // Konstanten aus dem Editor-Canvas: 24 Spalten; für Höhe nehmen wir max-y + h

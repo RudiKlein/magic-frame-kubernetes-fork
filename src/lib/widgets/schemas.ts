@@ -135,6 +135,14 @@ const messagesConfig = baseConfig
   })
   .passthrough();
 
+const imageConfig = baseConfig
+  .extend({
+    immichAlbumId: z.string().optional(),
+    fit: z.enum(["cover", "contain", "fill", "none"]).optional(),
+    intervalSec: z.number().optional(),
+  })
+  .passthrough();
+
 const shoppingConfig = baseConfig
   .extend({
     title: z.string().optional(),
@@ -209,6 +217,9 @@ export const widgetLayoutItemSchema = z.union([
     .merge(commonWidgetFields()),
   z
     .object({ type: z.literal("TodosWidget.tsx"), config: todosConfig })
+    .merge(commonWidgetFields()),
+  z
+    .object({ type: z.literal("ImageWidget.tsx"), config: imageConfig })
     .merge(commonWidgetFields()),
   ]),
 ]);
