@@ -16,9 +16,10 @@ const FIT_CLASS: Record<string, string> = {
 // Bild-Widget — Immich-Album-Slideshow in einem Widget (#16). Nutzt die globale
 // Immich-Verbindung über /api/immich-widget. Schlanke 2-Slot-Crossfade (kein
 // Ken-Burns/Tizen-Spezialfall wie beim Vollbild-Wallpaper nötig).
-export default function ImageWidget({ config }: { config?: any }) {
+export default function ImageWidget({ config, dashboardId }: { config?: any; dashboardId?: string }) {
   const t = useT();
   const albumId: string = config?.immichAlbumId ?? "";
+  const source: string = config?.immichSource ?? "global";
   const intervalSec: number = Math.max(5, config?.intervalSec ?? 30);
   const fitClass = FIT_CLASS[config?.fit as string] ?? "object-cover";
 
@@ -38,9 +39,10 @@ export default function ImageWidget({ config }: { config?: any }) {
       return;
     }
     let cancelled = false;
-    fetch(`/api/immich-widget?mode=playlist&albumId=${encodeURIComponent(albumId)}`, {
-      cache: "no-store",
-    })
+    fetch(
+      `/api/immich-widget?mode=playlist&albumId=${encodeURIComponent(albumId)}&source=${source}&dashboardId=${encodeURIComponent(dashboardId ?? "")}`,
+      { cache: "no-store" },
+    )
       .then((r) => r.json())
       .then((d) => {
         if (cancelled) return;

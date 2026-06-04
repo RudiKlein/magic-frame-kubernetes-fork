@@ -1,22 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAppSettings } from "@/lib/settings/store";
+import { resolveImmich } from "@/lib/immich/resolve";
 
 export const dynamic = "force-dynamic";
 
-// Bild-Widget — nutzt die GLOBALE Immich-Verbindung (Settings → Integrationen),
-// entkoppelt von der Wallpaper-Config. (#16, step 2)
+// Bild-Widget — nutzt je nach Widget-Einstellung die globale Immich-Verbindung
+// oder die des Views (Wallpaper). Auflösung in resolveImmich. (#16)
 //   mode=albums              → Albenliste (für den Inspector)
 //   mode=playlist&albumId=X  → gemischte Asset-Liste mit Proxy-URLs
 export async function GET(req: NextRequest) {
-  const s = await getAppSettings();
-  if (!s.immichUrl || !s.immichApiKey) {
+  const source = req.nextUrl.searchParams.get("source");
+  const dashboardId = req.nextUrl.searchParams.get("dashboardId");
+  const { url, key } = await resolveImmich(source, dashboardId);
+  if (!url || !key) {
     return NextResponse.json(
-      { error: "Immich nicht konfiguriert (Einstellungen → Integrationen)." },
+      { error: "Immich nicht konfiguriert (Einstellungen → Integrationen, oder im Wallpaper dieses Views)." },
       { status: 400 },
     );
   }
-  const base = s.immichUrl.replace(/\/+$/, "");
-  const headers = { "x-api-key": s.immichApiKey, Accept: "application/json" };
+  const base = url.replace(/\/+$/, "");
+  const headers = { "x-api-key": key, Accept: "application/json" };
   const mode = req.nextUrl.searchParams.get("mode") || "albums";
 
   try {
@@ -49,14 +51,15 @@ export async function GET(req: NextRequest) {
     if (!res.ok) return NextResponse.json({ error: `Immich ${res.status}` }, { status: 502 });
     const data = await res.json();
     const assets = (data.assets || []) as any[];
-    // Mischen (Fisher-Yates) + auf 200 begrenzen.
     for (let i = assets.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [assets[i], assets[j]] = [assets[j], assets[i]];
     }
+    const q = source ? `&source=${encodeURIComponent(source)}` : "";
+    const d = dashboardId ? `&dashboardId=${encodeURIComponent(dashboardId)}` : "";
     const playlist = assets.slice(0, 200).map((a) => ({
       id: a.id,
-      url: `/api/immich-widget/image?id=${encodeURIComponent(a.id)}`,
+      url: `/api/immich-widget/image?id=${encodeURIComponent(a.id)}${q}${d}`,
     }));
     return NextResponse.json({ playlist });
   } catch (err: any) {

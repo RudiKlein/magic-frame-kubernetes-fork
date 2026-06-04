@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { RefreshCw } from "lucide-react";
 import type { WidgetLayoutItem } from "../_types";
 import { useT } from "@/lib/i18n/LocaleProvider";
@@ -18,9 +19,14 @@ const INPUT =
 export function ImageInspector({ widget, updateConfig }: Props) {
   const t = useT();
   const cfg = (widget.config as any) ?? {};
+  const source: string = cfg.immichSource ?? "global";
   const albumId: string = cfg.immichAlbumId ?? "";
   const fit: string = cfg.fit ?? "cover";
   const intervalSec: number = cfg.intervalSec ?? 30;
+
+  // Editor-Pfad ist /editor/views/<dashboardId> — letztes Segment ist die View-ID.
+  const pathname = usePathname();
+  const dashboardId = (pathname ?? "").split("/").filter(Boolean).pop() ?? "";
 
   const [albums, setAlbums] = useState<Album[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -29,7 +35,10 @@ export function ImageInspector({ widget, updateConfig }: Props) {
   function loadAlbums() {
     setLoading(true);
     setError("");
-    fetch("/api/immich-widget?mode=albums", { cache: "no-store" })
+    fetch(
+      `/api/immich-widget?mode=albums&source=${source}&dashboardId=${encodeURIComponent(dashboardId)}`,
+      { cache: "no-store" },
+    )
       .then((r) => r.json())
       .then((d) => {
         if (Array.isArray(d.albums)) setAlbums(d.albums);
@@ -39,14 +48,30 @@ export function ImageInspector({ widget, updateConfig }: Props) {
       .finally(() => setLoading(false));
   }
 
+  // Bei Quellenwechsel die Albenliste neu laden (global vs. View kann
+  // unterschiedliche Immich-Instanzen sein).
   useEffect(() => {
     loadAlbums();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [source]);
 
   return (
     <div className="space-y-4">
-      <div className="bg-black/40 border border-white/10 rounded-xl p-3 text-xs text-white/60 leading-relaxed">
-        {t("Nutzt die globale Immich-Verbindung (Einstellungen → Integrationen).")}
+      <div>
+        <label className="text-sm font-medium text-white/80 block mb-2">{t("Immich-Quelle")}</label>
+        <select
+          value={source}
+          onChange={(e) => updateConfig(widget.i, "immichSource", e.target.value)}
+          className={INPUT}
+        >
+          <option value="global">{t("Global (Einstellungen)")}</option>
+          <option value="view">{t("Vom View (Wallpaper)")}</option>
+        </select>
+        <p className="text-xs text-white/40 mt-1.5 px-1 leading-relaxed">
+          {source === "view"
+            ? t("Nutzt die Immich-Daten aus dem Wallpaper dieses Views.")
+            : t("Nutzt die globale Immich-Verbindung (Einstellungen → Integrationen).")}
+        </p>
       </div>
 
       <div>
@@ -80,7 +105,9 @@ export function ImageInspector({ widget, updateConfig }: Props) {
               ? t("Lade Alben…")
               : error
                 ? t(error)
-                : t("Keine Alben gefunden — ist Immich global konfiguriert?")}
+                : source === "view"
+                  ? t("Keine Alben gefunden — ist im Wallpaper dieses Views Immich hinterlegt?")
+                  : t("Keine Alben gefunden — ist Immich global konfiguriert?")}
           </p>
         )}
       </div>

@@ -137,6 +137,7 @@ const messagesConfig = baseConfig
 
 const imageConfig = baseConfig
   .extend({
+    immichSource: z.enum(["global", "view"]).optional(),
     immichAlbumId: z.string().optional(),
     fit: z.enum(["cover", "contain", "fill", "none"]).optional(),
     intervalSec: z.number().optional(),

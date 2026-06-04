@@ -226,7 +226,7 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
     if (type === 'MessagesWidget.tsx') return <MessagesWidget config={config} dashboardId={dashboardId} />;
     if (type === 'ShoppingListWidget.tsx') return <ShoppingListWidget config={config} />;
     if (type === 'TodosWidget.tsx') return <TodosWidget config={config} />;
-    if (type === 'ImageWidget.tsx') return <ImageWidget config={config} />;
+    if (type === 'ImageWidget.tsx') return <ImageWidget config={config} dashboardId={dashboardId} />;
     if (type === 'CalendarWidget.tsx') return <CalendarWidget
         config={config}
         onVisibilityChange={(isVisible) => setAutoHiddenWidgets(prev => prev[id] === !isVisible ? prev : {...prev, [id]: !isVisible})}

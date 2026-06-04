@@ -1,23 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAppSettings } from "@/lib/settings/store";
+import { resolveImmich } from "@/lib/immich/resolve";
 
 export const dynamic = "force-dynamic";
 
 // Sicherer Bild-Proxy fürs Bild-Widget: holt das Asset server-seitig über die
-// globale Immich-Verbindung (API-Key bleibt server-side, nie im <img src>).
+// per source/dashboardId aufgelöste Immich-Verbindung (Key nie im <img src>).
 export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get("id");
   if (!id || !/^[A-Za-z0-9_-]+$/.test(id)) {
     return new NextResponse("Bad id", { status: 400 });
   }
-  const s = await getAppSettings();
-  if (!s.immichUrl || !s.immichApiKey) {
-    return new NextResponse("Immich not configured", { status: 400 });
-  }
-  const base = s.immichUrl.replace(/\/+$/, "");
+  const source = req.nextUrl.searchParams.get("source");
+  const dashboardId = req.nextUrl.searchParams.get("dashboardId");
+  const { url, key } = await resolveImmich(source, dashboardId);
+  if (!url || !key) return new NextResponse("Immich not configured", { status: 400 });
+  const base = url.replace(/\/+$/, "");
   try {
     const imgRes = await fetch(`${base}/api/assets/${id}/thumbnail?size=preview`, {
-      headers: { "x-api-key": s.immichApiKey },
+      headers: { "x-api-key": key },
       signal: AbortSignal.timeout(10000),
     });
     if (!imgRes.ok) return new NextResponse("Proxy error", { status: imgRes.status });
