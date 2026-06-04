@@ -112,15 +112,28 @@ export default function HAEntityInput({
   }, [open]);
 
   const q = query.toLowerCase().trim();
-  const matches = !q
-    ? entities.slice(0, 100)
-    : entities
-        .filter(
-          (e) =>
-            e.entity_id.toLowerCase().includes(q) ||
-            e.friendly_name.toLowerCase().includes(q),
-        )
-        .slice(0, 100);
+  // Limit gegen riesige DOM-Listen, aber großzügig genug, dass bei normalen
+  // HA-Setups nichts wegfällt (issue #22: sensor.* wurde vom 100er-Limit
+  // abgeschnitten, weil binary_sensor/automation alphabetisch davor liegen).
+  const LIMIT = 200;
+  let matches: Entity[];
+  if (!q) {
+    matches = entities.slice(0, LIMIT);
+  } else {
+    const startsWith = (e: Entity) =>
+      e.entity_id.toLowerCase().startsWith(q) ||
+      e.friendly_name.toLowerCase().startsWith(q);
+    matches = entities
+      .filter(
+        (e) =>
+          e.entity_id.toLowerCase().includes(q) ||
+          e.friendly_name.toLowerCase().includes(q),
+      )
+      // Präfix-Treffer zuerst: sonst verdrängt "binary_sensor" die "sensor"-
+      // Treffer im Limit (issue #22). Stabiler Sort → sonst Reihenfolge unverändert.
+      .sort((a, b) => (startsWith(a) ? 0 : 1) - (startsWith(b) ? 0 : 1))
+      .slice(0, LIMIT);
+  }
 
   const commit = (entityId: string) => {
     onChange(entityId);
@@ -194,14 +207,17 @@ export default function HAEntityInput({
               type="button"
               onMouseEnter={() => setHighlightIdx(idx)}
               onClick={() => commit(e.entity_id)}
-              className={`w-full text-left px-3 py-1.5 border-b border-white/5 last:border-0 flex items-baseline justify-between gap-3 ${
+              className={`w-full text-left px-3 py-1.5 border-b border-white/5 last:border-0 flex flex-col gap-0.5 ${
                 idx === highlightIdx ? "bg-white/10" : "hover:bg-white/5"
               }`}
             >
-              <span className="text-white text-xs truncate">
+              {/* Gestapelt statt nebeneinander: im schmalen Inspector-Feld
+                  verdrängte die entity_id sonst den Friendly Name (issue #23).
+                  Jetzt beide volle Breite, Friendly Name prominent oben. */}
+              <span className="text-white text-xs truncate w-full">
                 {e.friendly_name}
               </span>
-              <span className="text-white/40 text-[10px] font-mono truncate shrink-0">
+              <span className="text-white/40 text-[10px] font-mono truncate w-full">
                 {e.entity_id}
               </span>
             </button>
