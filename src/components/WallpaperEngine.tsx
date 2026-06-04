@@ -494,21 +494,24 @@ function FrameView({ frame, fitClass }: { frame: Frame; fitClass: string }) {
       />
     );
   }
-  // 2 → nebeneinander; 3–4 → 2×2-Raster. Jede Zelle füllt sich (cover),
-  // sonst entstünden Balken innerhalb der Zelle.
+  // 2 → nebeneinander; 3–4 → 2×2-Raster. Die Zellen respektieren den globalen
+  // fit (Füllen=cover füllt die Zelle, Einpassen=contain zeigt das ganze Bild —
+  // wie ImmichFrames imageFill-Schalter). gap-[3px] lässt den schwarzen
+  // Hintergrund als dezente Trennlinie durch (ImmichFrame nutzt dort einen
+  // Border in der Akzentfarbe).
   if (imgs.length === 2) {
     return (
-      <div className="absolute inset-0 flex">
+      <div className="absolute inset-0 flex gap-[3px]">
         {imgs.map((im) => (
-          <img key={im.id} src={im.url} alt="" className="w-1/2 h-full object-cover object-center" decoding="async" />
+          <img key={im.id} src={im.url} alt="" className={`w-1/2 h-full ${fitClass}`} decoding="async" />
         ))}
       </div>
     );
   }
   return (
-    <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
+    <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 gap-[3px]">
       {imgs.map((im) => (
-        <img key={im.id} src={im.url} alt="" className="w-full h-full object-cover object-center" decoding="async" />
+        <img key={im.id} src={im.url} alt="" className={`w-full h-full ${fitClass}`} decoding="async" />
       ))}
     </div>
   );

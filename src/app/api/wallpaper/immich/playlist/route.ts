@@ -125,13 +125,17 @@ export async function GET(req: NextRequest) {
            }
         }
 
-        // Orientierung für den Split-View (Schritt 3). Immich liefert die
-        // (rotation-korrigierten) Maße in exifInfo — height > width = Hochformat.
-        // Fallback landscape, falls keine Maße da sind.
-        const ew = asset.exifInfo?.exifImageWidth;
-        const eh = asset.exifInfo?.exifImageHeight;
-        const orientation: "portrait" | "landscape" =
-           typeof ew === "number" && typeof eh === "number" && eh > ew ? "portrait" : "landscape";
+        // Orientierung für den Split-View (Schritt 3) — exakt wie ImmichFrame
+        // (home-page.svelte/isPortrait): das EXIF-Rotation-Flag 5–8 dreht das
+        // Bild um 90°, also Höhe/Breite tauschen, bevor verglichen wird. Ohne
+        // das landen hochkant aufgenommene (aber landscape gespeicherte) Fotos
+        // im falschen Topf. Fallback landscape, wenn keine Maße da sind.
+        let ow = typeof asset.exifInfo?.exifImageWidth === "number" ? asset.exifInfo.exifImageWidth : 0;
+        let oh = typeof asset.exifInfo?.exifImageHeight === "number" ? asset.exifInfo.exifImageHeight : 0;
+        if ([5, 6, 7, 8].includes(Number(asset.exifInfo?.orientation ?? 0))) {
+           [ow, oh] = [oh, ow];
+        }
+        const orientation: "portrait" | "landscape" = oh > ow ? "portrait" : "landscape";
 
         playlist.push({
            id: asset.id,
