@@ -178,7 +178,7 @@ export default function TodosWidget({ config }: { config?: any }) {
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden flex flex-col gap-[0.3em]"
+      <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden flex flex-col gap-[0.3em] p-[0.15em]"
            style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}>
         {open.map((t) => (
           <TodoRow key={t.id} todo={t} onToggle={() => toggle(t.id)} showAssignee={!assigneeFilter} />
