@@ -125,11 +125,20 @@ export async function GET(req: NextRequest) {
            }
         }
 
+        // Orientierung für den Split-View (Schritt 3). Immich liefert die
+        // (rotation-korrigierten) Maße in exifInfo — height > width = Hochformat.
+        // Fallback landscape, falls keine Maße da sind.
+        const ew = asset.exifInfo?.exifImageWidth;
+        const eh = asset.exifInfo?.exifImageHeight;
+        const orientation: "portrait" | "landscape" =
+           typeof ew === "number" && typeof eh === "number" && eh > ew ? "portrait" : "landscape";
+
         playlist.push({
            id: asset.id,
            // Points to our secure proxy
            url: `/api/wallpaper/immich?id=${asset.id}&dashboardId=${dashboardId}`,
-           metadata
+           metadata,
+           orientation,
         });
      }
 

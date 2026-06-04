@@ -338,6 +338,22 @@ export default function WallpaperSettingsModal({
           {tab === "display" && (
             <>
                 <div>
+                   <label className="text-sm font-medium text-white/80 block mb-2">{t("Aufteilung (Split-View)")}</label>
+                   <select
+                      value={wallpaper.splitMode ?? "off"}
+                      onChange={(e) => setWallpaper({ ...wallpaper, splitMode: e.target.value as "off" | "auto" | "grid2" | "grid4" })}
+                      className="w-full bg-black border border-white/10 text-white text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500"
+                   >
+                      <option value="off">{t("Aus (ein Bild)")}</option>
+                      <option value="auto">{t("Auto (Hochformat paaren)")}</option>
+                      <option value="grid2">{t("2 nebeneinander")}</option>
+                      <option value="grid4">{t("2×2 (vier Bilder)")}</option>
+                   </select>
+                   <p className="text-[11px] text-white/40 mt-1">
+                      {t("Auto zeigt Querformat einzeln und legt zwei Hochformat-Bilder nebeneinander — gut für gemischte Alben. Im Split-Modus wird sanft übergeblendet (Crossfade).")}
+                   </p>
+                </div>
+                <div>
                    <label className="text-sm font-medium text-white/80 block mb-2">{t("Übergangseffekt")}</label>
                    <select
                       value={wallpaper.transitionEffect ?? (wallpaper.zoomEffect ? "kenburns" : "crossfade")}

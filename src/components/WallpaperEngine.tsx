@@ -1,13 +1,14 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BUNDLED_WALLPAPERS } from "@/lib/wallpaper-engine/bundled";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export interface WallpaperData {
   id: string;
   url: string;
+  orientation?: "portrait" | "landscape"; // für Split-View (Schritt 3)
   metadata?: {
     cameraModel?: string;
     locationName?: string;
@@ -138,18 +139,22 @@ export default function WallpaperEngine({
   // Ken-Burns-Zielzoom: Default 15 % (scale 1.15) = bisheriges Verhalten.
   const kenBurnsScale =
     1 + (typeof config?.kenBurnsIntensity === "number" ? config.kenBurnsIntensity : 15) / 100;
+  // Split-View (Schritt 3). "off" = bisheriger Einzelbild-Pfad, komplett
+  // unverändert. Sonst übernimmt <SplitSlideshow> Frame-Bildung + Crossfade.
+  const splitMode = (config?.splitMode as string) || "off";
 
   useEffect(() => {
-    if (!isReady || images.length <= 1) return;
+    if (!isReady || images.length <= 1 || splitMode !== "off") return;
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % images.length);
     }, intervalMs);
     return () => clearInterval(interval);
-  }, [isReady, images.length, intervalMs]);
+  }, [isReady, images.length, intervalMs, splitMode]);
 
   // Preload über Image()-Instanzen statt DOM-<img>. Browser-Cache reicht.
+  // Im Split-Modus übernimmt <SplitSlideshow> das Preloading selbst.
   useEffect(() => {
-    if (images.length === 0) return;
+    if (images.length === 0 || splitMode !== "off") return;
     const urls = Array.from(new Set([
       images[(currentIndex + 1) % images.length]?.url,
       images[(currentIndex + 2) % images.length]?.url,
@@ -160,7 +165,7 @@ export default function WallpaperEngine({
       return img;
     });
     return () => { for (const img of loaders) img.src = ""; };
-  }, [currentIndex, images]);
+  }, [currentIndex, images, splitMode]);
 
   if (images.length === 0) return <div className="absolute inset-0 bg-black z-0" />;
 
@@ -168,7 +173,15 @@ export default function WallpaperEngine({
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-black z-0">
-      {transition === "kenburns" ? (
+      {splitMode !== "off" ? (
+        <SplitSlideshow
+          images={images}
+          mode={splitMode as "auto" | "grid2" | "grid4"}
+          fitClass={`${fitClass} ${posClass}`}
+          durationMs={transitionMs}
+          intervalMs={intervalMs}
+        />
+      ) : transition === "kenburns" ? (
         <KenBurnsSlot
           image={currentImage}
           intervalMs={intervalMs}
@@ -228,6 +241,9 @@ export default function WallpaperEngine({
          // tatsächlich gerendert würde. Sind beide leer, fällt sie weg.
          // Die jeweils leere Seite bleibt als Platzhalter-Div drin, damit
          // justify-between (links/rechts) stabil bleibt.
+         // Im Split-Modus zeigt ein Frame mehrere Bilder — die Einzelbild-
+         // Metadaten-Bar ergibt dann keinen Sinn, also weg.
+         if (splitMode !== "off") return null;
          const showRing =
             images.length > 1 && intervalMs > 0 && config?.showTimer !== false;
          const showMeta =
@@ -421,6 +437,179 @@ function TwoSlotTransition({ image, mode, fitClass, durationMs }: { image: Wallp
         style={slotStyle("B")}
         decoding="async"
       />
+    </>
+  );
+}
+
+// ─────────────── Split-View (Schritt 3) ───────────────
+// Orientierungs-bewusste bzw. Grid-Slideshow. Baut aus der Playlist "Frames"
+// (1–4 Bilder) und blendet zwischen zwei Frame-Slots über — dieselbe
+// Tizen-sichere Mechanik wie <TwoSlotTransition>: beide Slots dauerhaft
+// gemountet, GPU-Layer-Promotion, Preload ALLER Bilder des nächsten Frames
+// vor dem Opacity-Swap.
+type SplitMode = "auto" | "grid2" | "grid4";
+type Frame = { key: string; images: WallpaperData[] };
+
+function buildFrames(images: WallpaperData[], mode: SplitMode): Frame[] {
+  if (images.length === 0) return [];
+  const frames: Frame[] = [];
+
+  if (mode === "grid2" || mode === "grid4") {
+    const n = mode === "grid2" ? 2 : 4;
+    for (let i = 0; i < images.length; i += n) {
+      const group = images.slice(i, i + n);
+      frames.push({ key: group.map((g) => g.id).join("_"), images: group });
+    }
+    return frames;
+  }
+
+  // auto: Querformat allein, zwei aufeinanderfolgende Hochformat-Bilder paaren.
+  // Ohne bekannte Orientierung (z.B. Nicht-Immich-Quellen) → als Querformat
+  // behandelt = Einzelbild, also kein Regress.
+  let i = 0;
+  while (i < images.length) {
+    const cur = images[i];
+    const next = images[i + 1];
+    if (cur.orientation === "portrait" && next?.orientation === "portrait") {
+      frames.push({ key: `${cur.id}_${next.id}`, images: [cur, next] });
+      i += 2;
+    } else {
+      frames.push({ key: cur.id, images: [cur] });
+      i += 1;
+    }
+  }
+  return frames;
+}
+
+function FrameView({ frame, fitClass }: { frame: Frame; fitClass: string }) {
+  const imgs = frame.images;
+  if (imgs.length <= 1) {
+    // Einzelbild → respektiert den globalen fit-/Position-Modus.
+    return (
+      <img
+        src={imgs[0]?.url}
+        alt=""
+        className={`absolute inset-0 w-full h-full ${fitClass}`}
+        decoding="async"
+      />
+    );
+  }
+  // 2 → nebeneinander; 3–4 → 2×2-Raster. Jede Zelle füllt sich (cover),
+  // sonst entstünden Balken innerhalb der Zelle.
+  if (imgs.length === 2) {
+    return (
+      <div className="absolute inset-0 flex">
+        {imgs.map((im) => (
+          <img key={im.id} src={im.url} alt="" className="w-1/2 h-full object-cover object-center" decoding="async" />
+        ))}
+      </div>
+    );
+  }
+  return (
+    <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
+      {imgs.map((im) => (
+        <img key={im.id} src={im.url} alt="" className="w-full h-full object-cover object-center" decoding="async" />
+      ))}
+    </div>
+  );
+}
+
+function SplitSlideshow({
+  images,
+  mode,
+  fitClass,
+  durationMs,
+  intervalMs,
+}: {
+  images: WallpaperData[];
+  mode: SplitMode;
+  fitClass: string;
+  durationMs: number;
+  intervalMs: number;
+}) {
+  const frames = useMemo(() => buildFrames(images, mode), [images, mode]);
+  const [idx, setIdx] = useState(0);
+  const [slotA, setSlotA] = useState<Frame | null>(null);
+  const [slotB, setSlotB] = useState<Frame | null>(null);
+  const [active, setActive] = useState<"A" | "B">("A");
+  const prevKey = useRef<string | null>(null);
+
+  // Beide Slots initial mit dem ersten Frame füllen, damit der erste
+  // Crossfade etwas zum Überblenden hat (analog TwoSlotTransition).
+  useEffect(() => {
+    if (frames.length > 0 && !slotA && !slotB) {
+      setSlotA(frames[0]);
+      setSlotB(frames[0]);
+      prevKey.current = frames[0].key;
+    }
+  }, [frames, slotA, slotB]);
+
+  useEffect(() => {
+    if (frames.length <= 1) return;
+    const t = setInterval(() => setIdx((p) => (p + 1) % frames.length), intervalMs);
+    return () => clearInterval(t);
+  }, [frames.length, intervalMs]);
+
+  // Crossfade: alle Bilder des neuen Frames vorladen, dann in den inaktiven
+  // Slot mounten und nach zwei rAF aktiv schalten.
+  useEffect(() => {
+    const frame = frames[idx];
+    if (!frame || frame.key === prevKey.current) return;
+    prevKey.current = frame.key;
+    let cancelled = false;
+
+    const swap = () => {
+      if (cancelled) return;
+      if (active === "A") {
+        setSlotB(frame);
+        requestAnimationFrame(() => requestAnimationFrame(() => { if (!cancelled) setActive("B"); }));
+      } else {
+        setSlotA(frame);
+        requestAnimationFrame(() => requestAnimationFrame(() => { if (!cancelled) setActive("A"); }));
+      }
+    };
+
+    // Erst überblenden, wenn alle Frame-Bilder dekodiert sind (sonst Hartschnitt
+    // mitten im Fade bei großen/ungecachten Bildern — derselbe Grund wie beim
+    // Einzelbild-Pfad).
+    let remaining = frame.images.length;
+    const tick = () => { if (--remaining <= 0) swap(); };
+    const loaders = frame.images.map((im) => {
+      const pre = new Image();
+      pre.onload = tick;
+      pre.onerror = tick;
+      pre.src = im.url;
+      return pre;
+    });
+    const failsafe = setTimeout(swap, 4000);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(failsafe);
+      for (const l of loaders) { l.onload = null; l.onerror = null; l.src = ""; }
+    };
+  }, [idx, frames, active]);
+
+  if (!slotA && !slotB) return null;
+
+  const slotStyle = (slotName: "A" | "B"): React.CSSProperties => ({
+    opacity: active === slotName ? 1 : 0,
+    transition: `opacity ${durationMs}ms ease-in-out`,
+    transform: "translate3d(0,0,0)",
+    WebkitTransform: "translate3d(0,0,0)",
+    backfaceVisibility: "hidden",
+    WebkitBackfaceVisibility: "hidden",
+    willChange: "opacity, transform",
+  });
+
+  return (
+    <>
+      <div className="absolute inset-0" style={slotStyle("A")}>
+        {slotA && <FrameView frame={slotA} fitClass={fitClass} />}
+      </div>
+      <div className="absolute inset-0" style={slotStyle("B")}>
+        {slotB && <FrameView frame={slotB} fitClass={fitClass} />}
+      </div>
     </>
   );
 }
