@@ -104,7 +104,10 @@ export interface WallpaperConfig {
   gradientBottom?: number;
   zoomEffect?: boolean;
   transitionEffect?: "crossfade" | "kenburns" | "slide" | "none";
+  transitionMs?: number; // Übergangs-Dauer (Default crossfade/kenburns 1500, slide 1200)
   fit?: "cover" | "contain" | "fill" | "none";
+  imagePosition?: "top" | "center" | "bottom"; // object-position (gegen abgeschnittene Köpfe)
+  kenBurnsIntensity?: number; // Ken-Burns-Zielzoom in % (Default 15 = scale 1.15)
   showTimer?: boolean;
 }
 

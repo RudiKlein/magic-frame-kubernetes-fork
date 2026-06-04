@@ -42,6 +42,13 @@ export default function WallpaperSettingsModal({
   const t = useT();
   const [tab, setTab] = useState<WpTab>("source");
 
+  // Übergangs-Effekt + abgeleitete Default-Dauer (für die Anzeige-Tab-Slider).
+  // Defaults spiegeln die Engine: slide 1200 ms, sonst 1500 ms.
+  const effectiveTransition =
+    wallpaper.transitionEffect ?? (wallpaper.zoomEffect ? "kenburns" : "crossfade");
+  const defaultTransMs = effectiveTransition === "slide" ? 1200 : 1500;
+  const transMs = wallpaper.transitionMs ?? defaultTransMs;
+
   const TABS: { key: WpTab; label: string }[] = [
     { key: "source", label: "Quelle" },
     { key: "display", label: "Anzeige" },
@@ -329,6 +336,33 @@ export default function WallpaperSettingsModal({
                       {t("Ken Burns ist effektvoll, aber auf alten TV-Browsern (Tizen) spürbar schwerer. Bei Stottern auf Crossfade oder Hart wechseln.")}
                    </p>
                 </div>
+                {effectiveTransition !== "none" && (
+                   <div>
+                      <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+                         <span>{t("Übergangs-Dauer")}</span>
+                         <span className="text-blue-400">{(transMs / 1000).toFixed(1)}s</span>
+                      </label>
+                      <input
+                         type="range" min="300" max="4000" step="100" value={transMs}
+                         onChange={(e) => setWallpaper({ ...wallpaper, transitionMs: parseInt(e.target.value) })}
+                         className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+                      />
+                   </div>
+                )}
+                {effectiveTransition === "kenburns" && (
+                   <div>
+                      <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+                         <span>{t("Ken-Burns-Intensität")}</span>
+                         <span className="text-blue-400">{wallpaper.kenBurnsIntensity ?? 15}%</span>
+                      </label>
+                      <input
+                         type="range" min="5" max="40" step="1" value={wallpaper.kenBurnsIntensity ?? 15}
+                         onChange={(e) => setWallpaper({ ...wallpaper, kenBurnsIntensity: parseInt(e.target.value) })}
+                         className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+                      />
+                      <p className="text-[11px] text-white/40 mt-1">{t("Wie weit das Bild langsam einzoomt. Höher = stärkerer Effekt.")}</p>
+                   </div>
+                )}
                 <div>
                    <label className="text-sm font-medium text-white/80 block mb-2">{t("Bildanzeige")}</label>
                    <select
@@ -343,6 +377,21 @@ export default function WallpaperSettingsModal({
                    </select>
                    <p className="text-[11px] text-white/40 mt-1">
                       {t("Füllen schneidet Ränder ab. Einpassen zeigt das ganze Bild ohne Beschneiden — gut für Hochformat-Fotos.")}
+                   </p>
+                </div>
+                <div>
+                   <label className="text-sm font-medium text-white/80 block mb-2">{t("Bild-Position")}</label>
+                   <select
+                      value={wallpaper.imagePosition ?? "center"}
+                      onChange={(e) => setWallpaper({ ...wallpaper, imagePosition: e.target.value as "top" | "center" | "bottom" })}
+                      className="w-full bg-black border border-white/10 text-white text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500"
+                   >
+                      <option value="top">{t("Oben")}</option>
+                      <option value="center">{t("Mitte (Standard)")}</option>
+                      <option value="bottom">{t("Unten")}</option>
+                   </select>
+                   <p className="text-[11px] text-white/40 mt-1">
+                      {t("Bei „Füllen“: welcher Bildausschnitt sichtbar bleibt — z.B. „Oben“ gegen abgeschnittene Köpfe.")}
                    </p>
                 </div>
                 <label className="flex items-center gap-3 cursor-pointer group">

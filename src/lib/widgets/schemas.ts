@@ -248,6 +248,12 @@ export const wallpaperSchema = z
     // Wie das Bild skaliert wird (issue #17). cover = Fill (default, croppt),
     // contain = Fit, fill = Stretch, none = Center.
     fit: z.enum(["cover", "contain", "fill", "none"]).optional(),
+    // Dia-/Bild-Einstellungen: Übergangs-Dauer (ms), Bild-Position (object-
+    // position), Ken-Burns-Intensität (%). Defaults reproduzieren das bisherige
+    // Verhalten exakt — keine Migration nötig.
+    transitionMs: z.number().optional(),
+    imagePosition: z.enum(["top", "center", "bottom"]).optional(),
+    kenBurnsIntensity: z.number().optional(),
   })
   .passthrough();
 

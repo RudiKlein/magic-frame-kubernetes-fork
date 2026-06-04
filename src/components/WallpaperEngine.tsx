@@ -31,7 +31,17 @@ const WALLPAPER_FIT: Record<string, string> = {
   cover: "object-cover", // Fill
   contain: "object-contain", // Fit — ganzes Bild, ggf. Balken
   fill: "object-fill", // Stretch — verzerrt
-  none: "object-none object-center", // Center — Originalgröße, zentriert
+  none: "object-none", // Center — Originalgröße (Position separat, s.u.)
+};
+
+// Bild-Position im Rahmen (object-position). Greift v.a. bei "Füllen" (cover)
+// und "Zentriert" (none) — damit z.B. Köpfe nicht abgeschnitten werden.
+// Default center = bisheriges Verhalten (cover ohne Position = 50%/50%, none
+// war vorher fest object-center).
+const WALLPAPER_POS: Record<string, string> = {
+  top: "object-top",
+  center: "object-center",
+  bottom: "object-bottom",
 };
 
 export default function WallpaperEngine({
@@ -116,6 +126,18 @@ export default function WallpaperEngine({
   const intervalMs = (config?.intervalSec || 60) * 1000;
   const transition = resolveTransition(config);
   const fitClass = WALLPAPER_FIT[config?.fit as string] ?? "object-cover";
+  const posClass = WALLPAPER_POS[config?.imagePosition as string] ?? "object-center";
+  // Übergangs-Dauer: konfigurierbar, Defaults = bisherige hartkodierte Werte
+  // (crossfade/kenburns 1500 ms, slide 1200 ms) → kein Tizen-Regress.
+  const transitionMs =
+    typeof config?.transitionMs === "number"
+      ? config.transitionMs
+      : transition === "slide"
+        ? 1200
+        : 1500;
+  // Ken-Burns-Zielzoom: Default 15 % (scale 1.15) = bisheriges Verhalten.
+  const kenBurnsScale =
+    1 + (typeof config?.kenBurnsIntensity === "number" ? config.kenBurnsIntensity : 15) / 100;
 
   useEffect(() => {
     if (!isReady || images.length <= 1) return;
@@ -147,16 +169,27 @@ export default function WallpaperEngine({
   return (
     <div className="absolute inset-0 overflow-hidden bg-black z-0">
       {transition === "kenburns" ? (
-        <KenBurnsSlot image={currentImage} intervalMs={intervalMs} fitClass={fitClass} />
+        <KenBurnsSlot
+          image={currentImage}
+          intervalMs={intervalMs}
+          fitClass={`${fitClass} ${posClass}`}
+          durationMs={transitionMs}
+          targetScale={kenBurnsScale}
+        />
       ) : transition === "none" ? (
         <img
           src={currentImage.url}
           alt=""
-          className={`absolute inset-0 w-full h-full ${fitClass}`}
+          className={`absolute inset-0 w-full h-full ${fitClass} ${posClass}`}
           decoding="async"
         />
       ) : (
-        <TwoSlotTransition image={currentImage} mode={transition} fitClass={fitClass} />
+        <TwoSlotTransition
+          image={currentImage}
+          mode={transition}
+          fitClass={`${fitClass} ${posClass}`}
+          durationMs={transitionMs}
+        />
       )}
 
       {/* Overlays */}
@@ -239,17 +272,29 @@ export default function WallpaperEngine({
 
 // Ken-Burns (langsamer Zoom + Opacity-Crossfade) — via Framer-Motion weil
 // die Scale-Animation über viele Sekunden läuft und Exit-Animation braucht.
-function KenBurnsSlot({ image, intervalMs, fitClass }: { image: WallpaperData; intervalMs: number; fitClass: string }) {
+function KenBurnsSlot({
+  image,
+  intervalMs,
+  fitClass,
+  durationMs,
+  targetScale,
+}: {
+  image: WallpaperData;
+  intervalMs: number;
+  fitClass: string;
+  durationMs: number;
+  targetScale: number;
+}) {
   return (
     <AnimatePresence initial={false}>
       <motion.img
         key={image.id}
         src={image.url}
         initial={{ opacity: 0, scale: 1 }}
-        animate={{ opacity: 1, scale: 1.15 }}
-        exit={{ opacity: 0, scale: 1.2 }}
+        animate={{ opacity: 1, scale: targetScale }}
+        exit={{ opacity: 0, scale: targetScale + 0.05 }}
         transition={{
-          opacity: { duration: 1.5, ease: "easeInOut" },
+          opacity: { duration: durationMs / 1000, ease: "easeInOut" },
           scale: { duration: Math.min(intervalMs / 1000 + 1.5, 30), ease: "linear" },
         }}
         className={`absolute inset-0 w-full h-full ${fitClass}`}
@@ -268,7 +313,7 @@ function KenBurnsSlot({ image, intervalMs, fitClass }: { image: WallpaperData; i
 // during a transition (which Tizen renders as a hard cut). slotB initially
 // shows the same image as slotA so the very first crossfade still has
 // something to fade from.
-function TwoSlotTransition({ image, mode, fitClass }: { image: WallpaperData; mode: "crossfade" | "slide"; fitClass: string }) {
+function TwoSlotTransition({ image, mode, fitClass, durationMs }: { image: WallpaperData; mode: "crossfade" | "slide"; fitClass: string; durationMs: number }) {
   const [slotA, setSlotA] = useState<WallpaperData>(image);
   const [slotB, setSlotB] = useState<WallpaperData>(image);
   const [active, setActive] = useState<"A" | "B">("A");
@@ -334,7 +379,7 @@ function TwoSlotTransition({ image, mode, fitClass }: { image: WallpaperData; mo
     if (mode === "crossfade") {
       return {
         opacity: isActive ? 1 : 0,
-        transition: "opacity 1500ms ease-in-out",
+        transition: `opacity ${durationMs}ms ease-in-out`,
         // Force GPU compositing on Tizen / older Chromium forks. Without
         // an explicit transform the browser composites opacity on the CPU,
         // which on a Samsung TV browser shows up as a hard jump instead of
@@ -353,7 +398,7 @@ function TwoSlotTransition({ image, mode, fitClass }: { image: WallpaperData; mo
     return {
       transform: isActive ? "translate3d(0,0,0)" : "translate3d(100%,0,0)",
       WebkitTransform: isActive ? "translate3d(0,0,0)" : "translate3d(100%,0,0)",
-      transition: "transform 1200ms cubic-bezier(0.77, 0, 0.175, 1)",
+      transition: `transform ${durationMs}ms cubic-bezier(0.77, 0, 0.175, 1)`,
       backfaceVisibility: "hidden",
       WebkitBackfaceVisibility: "hidden",
       willChange: "transform",
