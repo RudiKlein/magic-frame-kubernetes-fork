@@ -16,7 +16,7 @@ export async function GET() {
       await verifySession();
     } catch {
       // nicht eingeloggt -> nur leerer shell
-      return NextResponse.json({ haUrl: "", haToken: "" });
+      return NextResponse.json({ haUrl: "", haToken: "", immichUrl: "", immichApiKey: "" });
     }
     return NextResponse.json(s);
   } catch (err) {
@@ -29,9 +29,11 @@ export async function POST(req: NextRequest) {
   try {
     await verifySession();
     const body = await req.json();
-    const patch: { haUrl?: string; haToken?: string } = {};
+    const patch: { haUrl?: string; haToken?: string; immichUrl?: string; immichApiKey?: string } = {};
     if (typeof body.haUrl === "string") patch.haUrl = body.haUrl.trim();
     if (typeof body.haToken === "string") patch.haToken = body.haToken;
+    if (typeof body.immichUrl === "string") patch.immichUrl = body.immichUrl.trim();
+    if (typeof body.immichApiKey === "string") patch.immichApiKey = body.immichApiKey;
     await updateAppSettings(patch);
     return NextResponse.json({ ok: true });
   } catch (err: any) {

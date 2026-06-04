@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { getAppSettings } from '@/lib/settings/store';
 
 const connectionString = `${process.env.DATABASE_URL}`;
 const pool = new Pool({ connectionString });
@@ -22,9 +23,12 @@ export async function GET(req: NextRequest) {
      const wp = dashboard.wallpaper as any;
 
      if (wp.source !== 'immich') return new NextResponse("Not Immich", { status: 400 });
-     if (!wp.immichUrl || !wp.immichApiKey) return new NextResponse("Missing NAS credentials", { status: 400 });
+     const settings = await getAppSettings();
+     const immichUrl = wp.immichUrl || settings.immichUrl;
+     const immichApiKey = wp.immichApiKey || settings.immichApiKey;
+     if (!immichUrl || !immichApiKey) return new NextResponse("Missing NAS credentials", { status: 400 });
 
-     const baseUrl = wp.immichUrl.replace(/\/$/, "");
+     const baseUrl = immichUrl.replace(/\/$/, "");
 
      // We request the 'preview' size. This is technically a 1080p/approximate 4k scaling managed natively by Immich.
      // It guarantees fast load times while still looking amazing on Smart TVs.

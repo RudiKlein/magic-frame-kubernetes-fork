@@ -10,6 +10,13 @@ const prisma = new PrismaClient({ adapter });
 export type AppSettingsShape = {
   haUrl: string;
   haToken: string;
+  // Globale Immich-Verbindung (optionaler Default). Liegt in AppSettings.extra,
+  // damit kein DB-Schema-Change nötig ist. Wird von Wallpaper UND Bild-Widget
+  // genutzt — aber nur, wenn dort KEINE eigenen Immich-Daten hinterlegt sind
+  // (per-View/per-Widget-Override gewinnt). So bricht nichts bei bestehenden
+  // Installationen: deren Immich-Daten stehen pro View und zählen als Override.
+  immichUrl: string;
+  immichApiKey: string;
 };
 
 async function legacyFromDashboardOne(): Promise<Partial<AppSettingsShape>> {
@@ -23,31 +30,52 @@ async function legacyFromDashboardOne(): Promise<Partial<AppSettingsShape>> {
   return {};
 }
 
+function immichFromExtra(extra: any): { immichUrl: string; immichApiKey: string } {
+  const e = extra ?? {};
+  return {
+    immichUrl: typeof e.immichUrl === "string" ? e.immichUrl : "",
+    immichApiKey: typeof e.immichApiKey === "string" ? e.immichApiKey : "",
+  };
+}
+
 export async function getAppSettings(): Promise<AppSettingsShape> {
   const row = await prisma.appSettings.findUnique({ where: { id: "global" } });
+  const immich = immichFromExtra(row?.extra);
   if (row && (row.haUrl || row.haToken)) {
-    return { haUrl: row.haUrl, haToken: row.haToken };
+    return { haUrl: row.haUrl, haToken: row.haToken, ...immich };
   }
   const legacy = await legacyFromDashboardOne();
   if (row) {
-    return { haUrl: row.haUrl || legacy.haUrl || "", haToken: row.haToken || legacy.haToken || "" };
+    return {
+      haUrl: row.haUrl || legacy.haUrl || "",
+      haToken: row.haToken || legacy.haToken || "",
+      ...immich,
+    };
   }
-  return { haUrl: legacy.haUrl ?? "", haToken: legacy.haToken ?? "" };
+  return { haUrl: legacy.haUrl ?? "", haToken: legacy.haToken ?? "", ...immich };
 }
 
 export async function updateAppSettings(patch: Partial<AppSettingsShape>) {
   const now = new Date();
+  // extra mergen, NICHT überschreiben — sonst geht z.B. defaultLocale verloren.
+  const existing = await prisma.appSettings.findUnique({ where: { id: "global" } });
+  const extra: any = { ...((existing?.extra as any) ?? {}) };
+  if (patch.immichUrl !== undefined) extra.immichUrl = patch.immichUrl;
+  if (patch.immichApiKey !== undefined) extra.immichApiKey = patch.immichApiKey;
+
   await prisma.appSettings.upsert({
     where: { id: "global" },
     update: {
       ...(patch.haUrl !== undefined ? { haUrl: patch.haUrl } : {}),
       ...(patch.haToken !== undefined ? { haToken: patch.haToken } : {}),
+      extra,
       updatedAt: now,
     },
     create: {
       id: "global",
       haUrl: patch.haUrl ?? "",
       haToken: patch.haToken ?? "",
+      extra,
     },
   });
 }

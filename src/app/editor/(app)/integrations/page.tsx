@@ -19,6 +19,9 @@ export default function IntegrationsPage() {
   const [haToken, setHaToken] = useState("");
   const [haLoading, setHaLoading] = useState(true);
   const [haSaveStatus, setHaSaveStatus] = useState<null | "saving" | "saved" | "error">(null);
+  const [immichUrl, setImmichUrl] = useState("");
+  const [immichApiKey, setImmichApiKey] = useState("");
+  const [immichSaveStatus, setImmichSaveStatus] = useState<null | "saving" | "saved" | "error">(null);
 
   useEffect(() => {
     fetch("/api/settings", { cache: "no-store" })
@@ -26,6 +29,8 @@ export default function IntegrationsPage() {
       .then((d) => {
         setHaUrl(d.haUrl ?? "");
         setHaToken(d.haToken ?? "");
+        setImmichUrl(d.immichUrl ?? "");
+        setImmichApiKey(d.immichApiKey ?? "");
       })
       .catch(() => {})
       .finally(() => setHaLoading(false));
@@ -46,6 +51,24 @@ export default function IntegrationsPage() {
     } catch {
       setHaSaveStatus("error");
       setTimeout(() => setHaSaveStatus(null), 2500);
+    }
+  }
+
+  async function saveImmich(e: React.FormEvent) {
+    e.preventDefault();
+    setImmichSaveStatus("saving");
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ immichUrl: immichUrl.trim(), immichApiKey }),
+      });
+      if (!res.ok) throw new Error("save failed");
+      setImmichSaveStatus("saved");
+      setTimeout(() => setImmichSaveStatus(null), 2000);
+    } catch {
+      setImmichSaveStatus("error");
+      setTimeout(() => setImmichSaveStatus(null), 2500);
     }
   }
 
@@ -128,6 +151,70 @@ export default function IntegrationsPage() {
                 {haSaveStatus === "saved" && t("Gespeichert")}
                 {haSaveStatus === "error" && t("Fehler")}
                 {!haSaveStatus && t("Speichern")}
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <section className="mb-10 bg-zinc-900/60 border border-white/10 rounded-2xl p-6">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-2xl shrink-0">
+              🖼️
+            </div>
+            <div className="flex-1">
+              <h2 className="font-semibold text-lg">{t("Immich (global)")}</h2>
+              <p className="text-sm text-white/50">
+                {t("Globale Immich-Verbindung für Wallpaper + Bild-Widget. Pro View/Widget überschreibbar — wer dort eigene Daten einträgt, nutzt die.")}
+              </p>
+            </div>
+          </div>
+          <form onSubmit={saveImmich} className="space-y-4">
+            <label className="block">
+              <span className="text-xs font-medium text-white/70 block mb-1.5">{t("Immich-URL")}</span>
+              <input
+                type="url"
+                value={immichUrl}
+                onChange={(e) => setImmichUrl(e.target.value)}
+                placeholder="http://192.168.0.50:2283"
+                className="w-full bg-black border border-white/10 text-white text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500 transition-colors"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs font-medium text-white/70 block mb-1.5">{t("API-Key (Read Only)")}</span>
+              <input
+                type="password"
+                value={immichApiKey}
+                onChange={(e) => setImmichApiKey(e.target.value)}
+                placeholder="•••••••••••••••••••••"
+                autoComplete="off"
+                className="w-full bg-black border border-white/10 text-white text-sm font-mono rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500 transition-colors"
+              />
+              <p className="text-[11px] text-white/40 mt-1">
+                {t("Wird am Server gespeichert. Views ohne eigene Immich-Daten nutzen diese Verbindung.")}
+              </p>
+            </label>
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-xs text-white/40">
+                {immichUrl && immichApiKey
+                  ? t("Globale Verbindung konfiguriert.")
+                  : t("Optional — nur nötig, wenn Views keine eigenen Daten haben.")}
+              </span>
+              <button
+                type="submit"
+                disabled={immichSaveStatus === "saving"}
+                className={`flex items-center gap-1.5 px-3 h-9 rounded-lg text-sm font-semibold transition-colors shadow-sm ${
+                  immichSaveStatus === "saved"
+                    ? "bg-green-600 text-white shadow-green-500/30"
+                    : immichSaveStatus === "error"
+                      ? "bg-red-600 text-white shadow-red-500/30"
+                      : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-500/30"
+                }`}
+              >
+                {immichSaveStatus === "saved" ? <Check size={14} /> : <Save size={14} />}
+                {immichSaveStatus === "saving" && t("Speichere…")}
+                {immichSaveStatus === "saved" && t("Gespeichert")}
+                {immichSaveStatus === "error" && t("Fehler")}
+                {!immichSaveStatus && t("Speichern")}
               </button>
             </div>
           </form>

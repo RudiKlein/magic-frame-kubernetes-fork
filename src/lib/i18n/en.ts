@@ -205,6 +205,12 @@ export const EN: Record<string, string> = {
   "URL + Long-Lived Access Token. Gilt global. Token-Generator: HA-UI → Profil (unten links) → Long-Lived Access Tokens.":
     "URL + long-lived access token. Applies globally. Token generator: HA UI → Profile (bottom left) → Long-Lived Access Tokens.",
   "Home-Assistant-URL": "Home Assistant URL",
+  "Immich (global)": "Immich (global)",
+  "Globale Immich-Verbindung für Wallpaper + Bild-Widget. Pro View/Widget überschreibbar — wer dort eigene Daten einträgt, nutzt die.": "Global Immich connection for wallpaper + image widget. Overridable per view/widget — whoever enters their own data there uses it.",
+  "Immich-URL": "Immich URL",
+  "Wird am Server gespeichert. Views ohne eigene Immich-Daten nutzen diese Verbindung.": "Stored on the server. Views without their own Immich data use this connection.",
+  "Globale Verbindung konfiguriert.": "Global connection configured.",
+  "Optional — nur nötig, wenn Views keine eigenen Daten haben.": "Optional — only needed when views don't have their own data.",
   "Wird verschlüsselt am Server gespeichert und beim HA-Proxy eingesetzt. Niemals im Frontend-Bundle.":
     "Stored encrypted on the server and used by the HA proxy. Never in the frontend bundle.",
   "Verbindung konfiguriert.": "Connection configured.",
