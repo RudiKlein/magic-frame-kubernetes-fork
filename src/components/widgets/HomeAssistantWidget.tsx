@@ -74,6 +74,7 @@ export default function HomeAssistantWidget({ config, onVisibilityChange }: { co
     .map(e => ({
       id: e?.entityId,
       icon: e?.icon,
+      label: e?.label,
       color: e?.color,
       hideWhen: e?.hideWhen,
       colorWhen: e?.colorWhen,
@@ -238,7 +239,7 @@ export default function HomeAssistantWidget({ config, onVisibilityChange }: { co
           const stateObj = statesDict[slot.id as string];
           if (!stateObj) return <div key={index} className="animate-pulse bg-white/10 w-full h-[3em] rounded-full shrink-0"></div>;
 
-          const friendlyName = stateObj.attributes?.friendly_name || slot.id;
+          const friendlyName = (slot.label && String(slot.label).trim()) || stateObj.attributes?.friendly_name || slot.id;
           const stateVal = stateObj.state;
           const unit = stateObj.attributes?.unit_of_measurement || "";
           const finishesAt = stateObj.attributes?.finishes_at;

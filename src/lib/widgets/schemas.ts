@@ -90,6 +90,7 @@ const buttonConfig = baseConfig
 const haEntitySlot = z.object({
   entityId: z.string().optional(),
   icon: z.string().optional(),
+  label: z.string().optional(),
   color: z.string().optional(),
   hideWhen: z.string().optional(),
   colorWhen: z.string().optional(),

@@ -114,6 +114,19 @@ export default function HomeAssistantInspector({
               ]}
             />
 
+            <div className="mt-3">
+              <label className="text-[10px] font-medium text-blue-400 block mb-1 uppercase tracking-wider">
+                {t("Eigener Name (leer = HA-Name)")}
+              </label>
+              <input
+                type="text"
+                value={entity.label || ""}
+                onChange={(e) => updateEntity(idx, "label", e.target.value)}
+                placeholder={t("z.B. Pool")}
+                className="w-full bg-black border border-white/10 text-white text-sm rounded-lg p-3 focus:outline-none focus:border-cyan-500"
+              />
+            </div>
+
             <details className="bg-black/30 rounded-lg border border-white/5 p-2">
               <summary className="text-[10px] font-medium text-blue-400 uppercase tracking-wider cursor-pointer select-none">
                 {t("Sichtbarkeit abhängig von anderer Entity")}

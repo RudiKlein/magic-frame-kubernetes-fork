@@ -1,6 +1,7 @@
 export type HAEntitySlot = {
   entityId?: string;
   icon?: string;
+  label?: string;
   color?: string;
   hideWhen?: string;
   colorWhen?: string;
@@ -14,6 +15,7 @@ export type HAEntitySlot = {
 const SLOT_FIELDS: (keyof HAEntitySlot)[] = [
   "entityId",
   "icon",
+  "label",
   "color",
   "hideWhen",
   "colorWhen",

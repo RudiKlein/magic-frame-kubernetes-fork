@@ -220,6 +220,7 @@ export const EN: Record<string, string> = {
   "Zeigt den Wert einer HA-Entity als große Kachel — z.B. eine Temperatur.": "Shows a HA entity's value as a large tile — e.g. a temperature.",
   "Label (leer = HA-Name)": "Label (empty = HA name)",
   "z.B. Pool": "e.g. Pool",
+  "Eigener Name (leer = HA-Name)": "Custom name (empty = HA name)",
   "Einheit (leer = HA)": "Unit (empty = HA)",
   "Nachkommastellen": "Decimals",
   "Auto": "Auto",
