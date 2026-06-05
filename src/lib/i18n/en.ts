@@ -222,6 +222,8 @@ export const EN: Record<string, string> = {
   "Unschärfe": "Blur",
   "Icon mit Rahmen": "Icon with frame",
   "Icon-Größe": "Icon size",
+  "Icon im Kasten": "Icon in box",
+  "Kasten-Größe": "Box size",
   "Standard": "Default",
   "Standard (keine Farbe)": "Default (no color)",
   "Keine Entity gewählt — im Inspector einstellen.": "No entity selected — set it in the inspector.",

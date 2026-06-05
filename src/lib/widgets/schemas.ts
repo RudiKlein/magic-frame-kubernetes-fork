@@ -105,6 +105,9 @@ const homeAssistantConfig = baseConfig
     cardOpacity: z.number().optional(),
     cardTheme: z.enum(["dark", "light"]).optional(),
     cardBlur: z.number().optional(),
+    iconFrame: z.boolean().optional(), // Icon-Box an/aus (Default an)
+    iconScale: z.number().optional(), // Icon-Größe-Faktor (Default 1)
+    frameScale: z.number().optional(), // Kasten-Größe-Faktor (Default 1)
     entities: z.array(haEntitySlot).optional(),
   })
   .passthrough();
@@ -162,7 +165,8 @@ const sensorConfig = baseConfig
     cardOpacity: z.number().optional(),
     cardBlur: z.number().optional(),
     iconFrame: z.boolean().optional(),
-    iconSize: z.number().optional(), // Multiplikator, 1 = Standard
+    iconSize: z.number().optional(), // Icon-Größe-Faktor, 1 = Standard
+    frameScale: z.number().optional(), // Kasten-Größe-Faktor, 1 = Standard
     entities: z.array(sensorSlot).optional(),
   })
   .passthrough();

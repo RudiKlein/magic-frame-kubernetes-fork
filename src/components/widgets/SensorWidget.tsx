@@ -24,6 +24,7 @@ export default function SensorWidget({ config }: { config?: any }) {
   const design: string = config?.design === "grid" ? "grid" : "cards";
   const iconFrame: boolean = config?.iconFrame === true;
   const iconSize: number = typeof config?.iconSize === "number" ? config.iconSize : 1;
+  const frameScale: number = typeof config?.frameScale === "number" ? config.frameScale : 1;
   const glass = useGlassStyle(config);
   const ids = slots.map((s) => s.entityId).filter(Boolean) as string[];
 
@@ -97,8 +98,8 @@ export default function SensorWidget({ config }: { config?: any }) {
       <div
         className="flex items-center justify-center rounded-[0.5em] shrink-0"
         style={{
-          width: `${fs * 1.5}em`,
-          height: `${fs * 1.5}em`,
+          width: `${fs * 1.5 * frameScale}em`,
+          height: `${fs * 1.5 * frameScale}em`,
           backgroundColor: r.color ? `${r.color}26` : glass.isLight ? "rgba(0,0,0,0.06)" : "rgba(255,255,255,0.08)",
         }}
       >

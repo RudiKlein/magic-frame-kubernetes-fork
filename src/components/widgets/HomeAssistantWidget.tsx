@@ -227,6 +227,12 @@ export default function HomeAssistantWidget({ config, onVisibilityChange }: { co
   }, [visibleCount, onVisibilityChange, statesDict]);
 
   const glass = useGlassStyle(config);
+  // Icon-Darstellung (issue #20 / iz3man): Rahmen-Box an/aus, Icon-Größe und
+  // Kasten-Größe als Faktoren. Defaults reproduzieren exakt das bisherige
+  // Verhalten (Box an, 3.2em-Box, 1.4em-Icon) → kein Regress für bestehende Views.
+  const iconFrame = config?.iconFrame !== false;
+  const iconScale = typeof config?.iconScale === "number" ? config.iconScale : 1;
+  const frameScale = typeof config?.frameScale === "number" ? config.frameScale : 1;
 
   if (slots.length === 0) return <div className="text-white/50 text-sm tracking-wide flex items-center justify-center p-4 text-center">{t("Bitte mindestens eine Entity-ID im Editor konfigurieren")}</div>;
   if (error) return <div className="text-red-400 text-[0.8em]">{t(error)}</div>;
@@ -421,10 +427,14 @@ export default function HomeAssistantWidget({ config, onVisibilityChange }: { co
                       className="absolute inset-0 w-full h-full pointer-events-none opacity-50"
                    />
                 )}
-                <div style={inlineIconStyle} className={`relative shrink-0 w-[3.2em] h-[3.2em] rounded-[0.8em] flex items-center justify-center overflow-hidden transition-colors duration-500 ${hasBg ? (isLight ? 'border border-black/5' : 'border border-white/5') : ''} ${activeClass}`}>
+                {iconFrame ? (
+                <div style={{ ...inlineIconStyle, width: `${3.2 * frameScale}em`, height: `${3.2 * frameScale}em` }} className={`relative shrink-0 rounded-[0.8em] flex items-center justify-center overflow-hidden transition-colors duration-500 ${hasBg ? (isLight ? 'border border-black/5' : 'border border-white/5') : ''} ${activeClass}`}>
                     <div className="absolute inset-0 opacity-20 blur-md" style={{ backgroundColor: inlineIconStyle.color || (isActive && !customColor ? 'white' : 'transparent') }}></div>
-                    <Icon icon={iconStr} className="relative z-10" style={{ fontSize: '1.4em' }} />
+                    <Icon icon={iconStr} className="relative z-10" style={{ fontSize: `${1.4 * iconScale}em` }} />
                 </div>
+                ) : (
+                <Icon icon={iconStr} className="relative z-10 shrink-0" style={{ fontSize: `${1.4 * iconScale}em`, color: inlineIconStyle.color || (isLight ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.7)') }} />
+                )}
                 <div className="relative flex flex-col min-w-0 flex-1">
                     <span style={{ fontSize: '0.9em', color: isLight ? "rgba(0,0,0,0.9)" : "#fff" }} className={`font-bold tracking-tight leading-tight text-ellipsis whitespace-nowrap overflow-hidden`}>{friendlyName}</span>
                     <div style={{ color: isLight ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.5)" }} className={`flex items-baseline gap-[0.3em] font-mono uppercase tracking-wider mt-[0.2em] text-ellipsis whitespace-nowrap overflow-hidden`}>
