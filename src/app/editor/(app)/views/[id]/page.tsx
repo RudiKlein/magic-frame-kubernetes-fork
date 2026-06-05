@@ -11,6 +11,7 @@ import {
   Settings,
   Plus,
   Image as ImageIcon,
+  Gauge,
   X,
   ClipboardPaste,
   Save,
@@ -61,6 +62,7 @@ const WIDGET_CATALOG: {
   { type: "ShoppingListWidget.tsx", label: "Einkaufsliste", icon: <ShoppingCart size={16} /> },
   { type: "TodosWidget.tsx", label: "Todos", icon: <ClipboardList size={16} /> },
   { type: "ImageWidget.tsx", label: "Bild", icon: <ImageIcon size={16} /> },
+  { type: "SensorWidget.tsx", label: "Sensor", icon: <Gauge size={16} /> },
 ];
 
 const WIDGET_ACCENT: Record<string, { hex: string; glow: string; tint: string }> = {
@@ -73,6 +75,7 @@ const WIDGET_ACCENT: Record<string, { hex: string; glow: string; tint: string }>
   "TimerWidget.tsx":           { hex: "#10b981", glow: "rgba(16,185,129,0.25)",  tint: "rgba(16,185,129,0.12)"  }, // emerald
   "MessagesWidget.tsx":        { hex: "#d946ef", glow: "rgba(217,70,239,0.25)",  tint: "rgba(217,70,239,0.12)"  }, // fuchsia
   "ImageWidget.tsx":           { hex: "#a855f7", glow: "rgba(168,85,247,0.25)",  tint: "rgba(168,85,247,0.12)"  }, // purple
+  "SensorWidget.tsx":          { hex: "#14b8a6", glow: "rgba(20,184,166,0.25)",  tint: "rgba(20,184,166,0.12)"  }, // teal
   "ShoppingListWidget.tsx":    { hex: "#eab308", glow: "rgba(234,179,8,0.25)",   tint: "rgba(234,179,8,0.12)"   }, // yellow
   "TodosWidget.tsx":           { hex: "#6366f1", glow: "rgba(99,102,241,0.25)",  tint: "rgba(99,102,241,0.12)"  }, // indigo
 };
@@ -278,6 +281,15 @@ function widgetSkeletonFor(type: string, accentHex: string): React.ReactNode {
         </div>
       );
 
+    case "SensorWidget.tsx":
+      // Big value + small label.
+      return (
+        <div className="w-full h-full flex flex-col items-center justify-center gap-[8%]">
+          <div className="rounded-md" style={{ height: "34%", width: "52%", backgroundColor: dim }} />
+          <div className="rounded-full" style={{ height: "8%", width: "38%", backgroundColor: dimmer }} />
+        </div>
+      );
+
     case "ShoppingListWidget.tsx":
     case "TodosWidget.tsx":
       // List rows: checkbox square + text line.
@@ -325,6 +337,8 @@ function widgetIconFor(type: string, size = 12): React.ReactNode {
       return <MessageSquare size={size} />;
     case "ImageWidget.tsx":
       return <ImageIcon size={size} />;
+    case "SensorWidget.tsx":
+      return <Gauge size={size} />;
     case "ShoppingListWidget.tsx":
       return <ShoppingCart size={size} />;
     case "TodosWidget.tsx":

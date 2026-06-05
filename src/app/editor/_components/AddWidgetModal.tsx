@@ -46,6 +46,10 @@ export default function AddWidgetModal({ onClose, addWidget }: AddWidgetModalPro
                 <div className="text-3xl mb-2 text-purple-400">🖼️</div>
                 <div className="font-bold text-white">{t("Bild (Immich)")}</div>
              </button>
+             <button onClick={() => addWidget("SensorWidget.tsx")} className="bg-white/5 hover:bg-teal-500/10 border border-white/10 hover:border-teal-500/30 rounded-xl p-4 text-center transition-colors">
+                <div className="text-3xl mb-2 text-teal-400">🌡️</div>
+                <div className="font-bold text-white">{t("Sensor")}</div>
+             </button>
           </div>
        </div>
     </div>

@@ -145,6 +145,15 @@ const imageConfig = baseConfig
   })
   .passthrough();
 
+const sensorConfig = baseConfig
+  .extend({
+    entityId: z.string().optional(),
+    label: z.string().optional(),
+    unit: z.string().optional(),
+    decimals: z.number().optional(),
+  })
+  .passthrough();
+
 const shoppingConfig = baseConfig
   .extend({
     title: z.string().optional(),
@@ -222,6 +231,9 @@ export const widgetLayoutItemSchema = z.union([
     .merge(commonWidgetFields()),
   z
     .object({ type: z.literal("ImageWidget.tsx"), config: imageConfig })
+    .merge(commonWidgetFields()),
+  z
+    .object({ type: z.literal("SensorWidget.tsx"), config: sensorConfig })
     .merge(commonWidgetFields()),
   ]),
 ]);

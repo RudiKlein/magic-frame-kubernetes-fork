@@ -129,6 +129,7 @@ export const WIDGET_DEFAULT_LABEL: Record<string, string> = {
   "TimerWidget.tsx": "Timer",
   "MessagesWidget.tsx": "Nachrichten",
   "ImageWidget.tsx": "Bild",
+  "SensorWidget.tsx": "Sensor",
   "ShoppingListWidget.tsx": "Einkaufsliste",
   "TodosWidget.tsx": "Todos",
   "CameraWidget.tsx": "Kamera",

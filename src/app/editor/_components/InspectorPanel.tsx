@@ -18,6 +18,7 @@ import {
   TodosInspector,
 } from "../_inspectors/CompanionInspectors";
 import { ImageInspector } from "../_inspectors/ImageInspector";
+import { SensorInspector } from "../_inspectors/SensorInspector";
 import CustomModuleInspector from "../_inspectors/CustomModuleInspector";
 
 type InspectorPanelProps = {
@@ -63,6 +64,7 @@ const NO_MULTICOL_CONTENT = new Set<string>([
   "ShoppingListWidget.tsx",
   "TodosWidget.tsx",
   "ImageWidget.tsx",
+  "SensorWidget.tsx",
 ]);
 
 export default function InspectorPanel(props: InspectorPanelProps) {
@@ -512,6 +514,9 @@ function ContentTab(props: InspectorPanelProps) {
       )}
       {activeWidget.type === "ImageWidget.tsx" && (
         <ImageInspector widget={activeWidget} updateConfig={updateConfig} />
+      )}
+      {activeWidget.type === "SensorWidget.tsx" && (
+        <SensorInspector widget={activeWidget} updateConfig={updateConfig} />
       )}
       {activeWidget.type.startsWith("custom:") && (
         <CustomModuleInspector widget={activeWidget} updateConfig={updateConfig} />
