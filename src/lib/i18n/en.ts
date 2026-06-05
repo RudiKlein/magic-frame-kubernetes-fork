@@ -254,6 +254,7 @@ export const EN: Record<string, string> = {
   "Neu laden": "Reload",
   "Keine Alben gefunden — ist Immich global konfiguriert?": "No albums found — is Immich configured globally?",
   "Verbindung fehlgeschlagen": "Connection failed",
+  "Immich nicht konfiguriert (Einstellungen → Integrationen, oder im Wallpaper dieses Views).": "Immich not configured (Settings → Integrations, or in this view's wallpaper).",
   "Globale Immich-Verbindung für Wallpaper + Bild-Widget. Pro View/Widget überschreibbar — wer dort eigene Daten einträgt, nutzt die.": "Global Immich connection for wallpaper + image widget. Overridable per view/widget — whoever enters their own data there uses it.",
   "Immich-URL": "Immich URL",
   "Wird am Server gespeichert. Views ohne eigene Immich-Daten nutzen diese Verbindung.": "Stored on the server. Views without their own Immich data use this connection.",
