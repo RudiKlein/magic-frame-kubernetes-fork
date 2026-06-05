@@ -145,12 +145,18 @@ const imageConfig = baseConfig
   })
   .passthrough();
 
+const sensorSlot = z.object({
+  entityId: z.string().optional(),
+  icon: z.string().optional(),
+  label: z.string().optional(),
+  unit: z.string().optional(),
+  decimals: z.number().optional(),
+});
+
 const sensorConfig = baseConfig
   .extend({
-    entityId: z.string().optional(),
-    label: z.string().optional(),
-    unit: z.string().optional(),
-    decimals: z.number().optional(),
+    design: z.enum(["cards", "grid"]).optional(),
+    entities: z.array(sensorSlot).optional(),
   })
   .passthrough();
 
