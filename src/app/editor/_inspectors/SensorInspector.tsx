@@ -109,6 +109,18 @@ export function SensorInspector({ widget, updateConfig }: Props) {
           </div>
           <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{t("Icon mit Rahmen")}</span>
         </label>
+
+        <div>
+          <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+            <span>{t("Icon-Größe")}</span>
+            <span className="text-blue-400">{Math.round((cfg.iconSize ?? 1) * 100)}%</span>
+          </label>
+          <input
+            type="range" min="0.6" max="2.4" step="0.1" value={cfg.iconSize ?? 1}
+            onChange={(e) => updateConfig(widget.i, "iconSize", parseFloat(e.target.value))}
+            className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+          />
+        </div>
       </div>
 
       <div className="space-y-3">

@@ -162,6 +162,7 @@ const sensorConfig = baseConfig
     cardOpacity: z.number().optional(),
     cardBlur: z.number().optional(),
     iconFrame: z.boolean().optional(),
+    iconSize: z.number().optional(), // Multiplikator, 1 = Standard
     entities: z.array(sensorSlot).optional(),
   })
   .passthrough();

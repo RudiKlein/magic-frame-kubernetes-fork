@@ -23,6 +23,7 @@ export default function SensorWidget({ config }: { config?: any }) {
   const slots: Slot[] = Array.isArray(config?.entities) ? config.entities : [];
   const design: string = config?.design === "grid" ? "grid" : "cards";
   const iconFrame: boolean = config?.iconFrame === true;
+  const iconSize: number = typeof config?.iconSize === "number" ? config.iconSize : 1;
   const glass = useGlassStyle(config);
   const ids = slots.map((s) => s.entityId).filter(Boolean) as string[];
 
@@ -88,17 +89,16 @@ export default function SensorWidget({ config }: { config?: any }) {
     });
 
   // Icon, optional in einer Rahmen-Box (wie HA-Widget). Ohne Rahmen: nacktes Icon.
-  const iconEl = (r: (typeof rows)[number], size: string) => {
-    const ic = (
-      <Icon icon={r.icon} style={{ fontSize: size, color: r.color || iconDefaultColor }} />
-    );
+  const iconEl = (r: (typeof rows)[number], baseEm: number) => {
+    const fs = baseEm * iconSize;
+    const ic = <Icon icon={r.icon} style={{ fontSize: `${fs}em`, color: r.color || iconDefaultColor }} />;
     if (!iconFrame) return ic;
     return (
       <div
         className="flex items-center justify-center rounded-[0.5em] shrink-0"
         style={{
-          width: "2em",
-          height: "2em",
+          width: `${fs * 1.5}em`,
+          height: `${fs * 1.5}em`,
           backgroundColor: r.color ? `${r.color}26` : glass.isLight ? "rgba(0,0,0,0.06)" : "rgba(255,255,255,0.08)",
         }}
       >
@@ -127,7 +127,7 @@ export default function SensorWidget({ config }: { config?: any }) {
             className="flex flex-col items-center justify-center text-center rounded-[0.8em] p-[0.6em] gap-[0.3em] overflow-hidden"
             style={glass.cardStyle}
           >
-            {iconEl(r, "1.3em")}
+            {iconEl(r, 1.3)}
             <div className="flex items-baseline gap-[0.1em] max-w-full">
               <span className="font-semibold leading-none truncate" style={{ fontSize: "1.7em", color: textMain }}>
                 {r.value}
@@ -152,7 +152,7 @@ export default function SensorWidget({ config }: { config?: any }) {
           className="flex items-center gap-[0.6em] rounded-[0.8em] px-[0.7em] py-[0.5em] overflow-hidden"
           style={glass.cardStyle}
         >
-          {iconEl(r, "1.5em")}
+          {iconEl(r, 1.5)}
           <span className="text-[0.82em] truncate flex-1" style={{ color: textSub }}>{r.label}</span>
           <div className="flex items-baseline gap-[0.1em] shrink-0">
             <span className="font-semibold leading-none" style={{ fontSize: "1.5em", color: textMain }}>{r.value}</span>

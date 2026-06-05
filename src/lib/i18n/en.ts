@@ -221,6 +221,7 @@ export const EN: Record<string, string> = {
   "Hell (weißes Glas)": "Light (white glass)",
   "Unschärfe": "Blur",
   "Icon mit Rahmen": "Icon with frame",
+  "Icon-Größe": "Icon size",
   "Standard": "Default",
   "Standard (keine Farbe)": "Default (no color)",
   "Keine Entity gewählt — im Inspector einstellen.": "No entity selected — set it in the inspector.",
