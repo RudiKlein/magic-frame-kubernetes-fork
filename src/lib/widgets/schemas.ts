@@ -150,6 +150,7 @@ const sensorSlot = z.object({
   entityId: z.string().optional(),
   icon: z.string().optional(),
   label: z.string().optional(),
+  color: z.string().optional(),
   unit: z.string().optional(),
   decimals: z.number().optional(),
 });

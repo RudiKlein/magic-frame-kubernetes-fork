@@ -9,7 +9,7 @@ import { useT } from "@/lib/i18n/LocaleProvider";
 // Home-Assistant-Entities als gut lesbare Werte (Icon + kurzer Name + großer
 // Wert), nicht als Control-Surface. Cards- oder Grid-Layout. Pollt
 // /api/ha/state (eine Anfrage für alle Entities), robust gegen unavailable.
-type Slot = { entityId?: string; icon?: string; label?: string; unit?: string; decimals?: number };
+type Slot = { entityId?: string; icon?: string; label?: string; color?: string; unit?: string; decimals?: number };
 
 function formatValue(rawState: any, decimals?: number): string {
   if (rawState == null || rawState === "unavailable" || rawState === "unknown") return "—";
@@ -74,6 +74,7 @@ export default function SensorWidget({ config }: { config?: any }) {
       return {
         key: s.entityId!,
         icon: s.icon || attrs.icon || "mdi:gauge",
+        color: (s.color ?? "").trim(),
         label: (s.label ?? "").trim() || attrs.friendly_name || s.entityId!,
         value: formatValue(st?.state, s.decimals),
         unit: (s.unit ?? "").trim() || attrs.unit_of_measurement || "",
@@ -97,9 +98,9 @@ export default function SensorWidget({ config }: { config?: any }) {
         {rows.map((r) => (
           <div
             key={r.key}
-            className="flex flex-col items-center justify-center text-center bg-white/5 rounded-[0.8em] p-[0.5em] gap-[0.12em] overflow-hidden"
+            className="flex flex-col items-center justify-center text-center bg-white/5 rounded-[0.8em] p-[0.6em] gap-[0.3em] overflow-hidden"
           >
-            <Icon icon={r.icon} style={{ fontSize: "1.5em" }} className="opacity-70" />
+            <Icon icon={r.icon} style={{ fontSize: "1.3em", color: r.color || undefined }} className={r.color ? "" : "opacity-60"} />
             <div className="flex items-baseline gap-[0.1em] max-w-full">
               <span className="font-semibold leading-none truncate" style={{ fontSize: "1.7em" }}>
                 {r.value}
@@ -123,7 +124,7 @@ export default function SensorWidget({ config }: { config?: any }) {
           key={r.key}
           className="flex items-center gap-[0.6em] bg-white/5 rounded-[0.8em] px-[0.7em] py-[0.5em] overflow-hidden"
         >
-          <Icon icon={r.icon} style={{ fontSize: "1.6em" }} className="opacity-70 shrink-0" />
+          <Icon icon={r.icon} style={{ fontSize: "1.5em", color: r.color || undefined }} className={`shrink-0 ${r.color ? "" : "opacity-70"}`} />
           <span className="opacity-70 text-[0.82em] truncate flex-1">{r.label}</span>
           <div className="flex items-baseline gap-[0.1em] shrink-0">
             <span className="font-semibold leading-none" style={{ fontSize: "1.5em" }}>{r.value}</span>

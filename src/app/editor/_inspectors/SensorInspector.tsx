@@ -1,18 +1,19 @@
 "use client";
 
-import React from "react";
-import { Plus, Trash2 } from "lucide-react";
+import React, { useState } from "react";
+import { Plus } from "lucide-react";
 import type { WidgetLayoutItem } from "../_types";
 import { useT } from "@/lib/i18n/LocaleProvider";
 import HAEntityInput from "../_components/HAEntityInput";
 import IconPicker from "../_components/IconPicker";
+import AccordionCard from "../_components/AccordionCard";
 
 type Props = {
   widget: WidgetLayoutItem;
   updateConfig: (i: string, key: string, value: any) => void;
 };
 
-type Slot = { entityId?: string; icon?: string; label?: string; unit?: string; decimals?: number };
+type Slot = { entityId?: string; icon?: string; label?: string; color?: string; unit?: string; decimals?: number };
 
 const INPUT =
   "w-full bg-black border border-white/10 text-white text-sm rounded-lg px-3 h-10 focus:outline-none focus:border-blue-500";
@@ -22,12 +23,26 @@ export function SensorInspector({ widget, updateConfig }: Props) {
   const cfg = (widget.config as any) ?? {};
   const design: string = cfg.design === "grid" ? "grid" : "cards";
   const slots: Slot[] = Array.isArray(cfg.entities) ? cfg.entities : [];
+  const [openIdx, setOpenIdx] = useState<number | null>(null);
 
   const setSlots = (next: Slot[]) => updateConfig(widget.i, "entities", next);
-  const addSlot = () => setSlots([...slots, { entityId: "" }]);
-  const removeSlot = (idx: number) => setSlots(slots.filter((_, i) => i !== idx));
+  const addSlot = () => {
+    setSlots([...slots, { entityId: "" }]);
+    setOpenIdx(slots.length);
+  };
+  const removeSlot = (idx: number) => {
+    setSlots(slots.filter((_, i) => i !== idx));
+    if (openIdx === idx) setOpenIdx(null);
+  };
   const updateSlot = (idx: number, key: keyof Slot, value: any) =>
     setSlots(slots.map((s, i) => (i === idx ? { ...s, [key]: value } : s)));
+  const moveSlot = (idx: number, dir: number) => {
+    const target = idx + dir;
+    if (target < 0 || target >= slots.length) return;
+    const next = [...slots];
+    [next[idx], next[target]] = [next[target], next[idx]];
+    setSlots(next);
+  };
 
   return (
     <div className="space-y-4">
@@ -48,69 +63,103 @@ export function SensorInspector({ widget, updateConfig }: Props) {
           <p className="text-xs text-white/40 px-1">{t("Noch keine Sensoren — unten hinzufügen.")}</p>
         )}
         {slots.map((slot, idx) => (
-          <div key={idx} className="bg-white/5 border border-white/10 rounded-xl p-3 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] uppercase tracking-wider text-white/40">
-                {t("Sensor")} {idx + 1}
-              </span>
-              <button
-                type="button"
-                onClick={() => removeSlot(idx)}
-                className="text-white/40 hover:text-red-400 transition-colors"
-                aria-label={t("Entfernen")}
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
+          <AccordionCard
+            key={idx}
+            open={openIdx === idx}
+            onToggle={() => setOpenIdx(openIdx === idx ? null : idx)}
+            dotColor={slot.color || "#14b8a6"}
+            title={(slot.label && slot.label.trim()) || slot.entityId || `${t("Sensor")} ${idx + 1}`}
+            onDelete={() => removeSlot(idx)}
+            headerExtra={
+              <div className="flex gap-0.5 shrink-0">
+                <button
+                  onClick={(e) => { e.stopPropagation(); moveSlot(idx, -1); }}
+                  disabled={idx === 0}
+                  className="text-white/40 hover:text-white disabled:opacity-20 px-1.5 py-0.5 text-xs"
+                  title={t("Nach oben")}
+                >▲</button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); moveSlot(idx, 1); }}
+                  disabled={idx === slots.length - 1}
+                  className="text-white/40 hover:text-white disabled:opacity-20 px-1.5 py-0.5 text-xs"
+                  title={t("Nach unten")}
+                >▼</button>
+              </div>
+            }
+          >
+            <div className="space-y-3">
+              <HAEntityInput
+                value={slot.entityId || ""}
+                onChange={(v) => updateSlot(idx, "entityId", v)}
+                placeholder="sensor.pool_temperature"
+                clearable
+              />
 
-            <HAEntityInput
-              value={slot.entityId || ""}
-              onChange={(v) => updateSlot(idx, "entityId", v)}
-              placeholder="sensor.pool_temperature"
-              clearable
-            />
+              <IconPicker
+                label={t("Icon")}
+                value={slot.icon || ""}
+                onChange={(iconId) => updateSlot(idx, "icon", iconId)}
+                placeholder="mdi:gauge"
+                defaultPrefix="mdi"
+              />
 
-            <IconPicker
-              label={t("Icon")}
-              value={slot.icon || ""}
-              onChange={(iconId) => updateSlot(idx, "icon", iconId)}
-              placeholder="mdi:gauge"
-              defaultPrefix="mdi"
-            />
+              <div>
+                <label className="text-xs text-white/50 block mb-1.5">{t("Icon-Farbe")}</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={slot.color || "#14b8a6"}
+                    onChange={(e) => updateSlot(idx, "color", e.target.value)}
+                    className="h-9 w-14 bg-black border border-white/10 rounded-lg cursor-pointer"
+                  />
+                  {slot.color ? (
+                    <button
+                      type="button"
+                      onClick={() => updateSlot(idx, "color", undefined)}
+                      className="text-xs text-white/50 hover:text-white"
+                    >
+                      {t("Standard")}
+                    </button>
+                  ) : (
+                    <span className="text-xs text-white/40">{t("Standard (keine Farbe)")}</span>
+                  )}
+                </div>
+              </div>
 
-            <input
-              type="text"
-              value={slot.label || ""}
-              onChange={(e) => updateSlot(idx, "label", e.target.value)}
-              placeholder={t("Label (leer = HA-Name)")}
-              className={INPUT}
-            />
+              <input
+                type="text"
+                value={slot.label || ""}
+                onChange={(e) => updateSlot(idx, "label", e.target.value)}
+                placeholder={t("Label (leer = HA-Name)")}
+                className={INPUT}
+              />
 
-            <div>
-              <label className="text-xs text-white/50 block mb-1.5">{t("Einheit / Nachkommastellen")}</label>
-              <div className="grid grid-cols-2 gap-3">
-                <input
-                  type="text"
-                  value={slot.unit || ""}
-                  onChange={(e) => updateSlot(idx, "unit", e.target.value)}
-                  placeholder="°C"
-                  className={INPUT}
-                />
-                <select
-                  value={typeof slot.decimals === "number" ? String(slot.decimals) : "auto"}
-                  onChange={(e) =>
-                    updateSlot(idx, "decimals", e.target.value === "auto" ? undefined : parseInt(e.target.value))
-                  }
-                  className={INPUT}
-                >
-                  <option value="auto">{t("Auto")}</option>
-                  <option value="0">0</option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                </select>
+              <div>
+                <label className="text-xs text-white/50 block mb-1.5">{t("Einheit / Nachkommastellen")}</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    value={slot.unit || ""}
+                    onChange={(e) => updateSlot(idx, "unit", e.target.value)}
+                    placeholder="°C"
+                    className={INPUT}
+                  />
+                  <select
+                    value={typeof slot.decimals === "number" ? String(slot.decimals) : "auto"}
+                    onChange={(e) =>
+                      updateSlot(idx, "decimals", e.target.value === "auto" ? undefined : parseInt(e.target.value))
+                    }
+                    className={INPUT}
+                  >
+                    <option value="auto">{t("Auto")}</option>
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                  </select>
+                </div>
               </div>
             </div>
-          </div>
+          </AccordionCard>
         ))}
       </div>
 
