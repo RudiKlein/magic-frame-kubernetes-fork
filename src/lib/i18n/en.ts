@@ -211,6 +211,8 @@ export const EN: Record<string, string> = {
   "Keine Sensoren gewählt — im Inspector hinzufügen.": "No sensors selected — add them in the inspector.",
   "Noch keine Sensoren — unten hinzufügen.": "No sensors yet — add one below.",
   "Sensor hinzufügen": "Add sensor",
+  "Verlauf anzeigen (Sparkline)": "Show history (sparkline)",
+  "Nur Zahlen-Entities (Sensoren) haben einen sinnvollen Verlauf. HA-History muss aktiv sein.": "Only numeric entities (sensors) have a usable history. HA's history API must be enabled.",
   "Darstellung": "Layout",
   "Cards (Zeilen)": "Cards (rows)",
   "Kacheln (Grid)": "Tiles (grid)",

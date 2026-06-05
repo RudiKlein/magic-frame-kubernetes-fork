@@ -5,6 +5,7 @@ import { Icon } from "@iconify/react";
 import { Activity } from "lucide-react";
 import { useT } from "@/lib/i18n/LocaleProvider";
 import { useGlassStyle } from "@/lib/ui/glass";
+import Sparkline from "./ha/Sparkline";
 
 // Sensor-Widget (#20): Anzeige-Pendant zum HA-Widget. Mehrere HA-Entities als
 // gut lesbare Werte (Icon + kurzer Name + großer Wert), Cards- oder Grid-Layout.
@@ -25,10 +26,13 @@ export default function SensorWidget({ config }: { config?: any }) {
   const iconFrame: boolean = config?.iconFrame === true;
   const iconSize: number = typeof config?.iconSize === "number" ? config.iconSize : 1;
   const frameScale: number = typeof config?.frameScale === "number" ? config.frameScale : 1;
+  const showSparkline: boolean = config?.showSparkline === true;
+  const sparklineHours: number = Math.max(1, Math.min(168, Number(config?.sparklineHours) || 6));
   const glass = useGlassStyle(config);
   const ids = slots.map((s) => s.entityId).filter(Boolean) as string[];
 
   const [statesDict, setStatesDict] = useState<Record<string, any>>({});
+  const [histories, setHistories] = useState<Record<string, number[]>>({});
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -60,6 +64,42 @@ export default function SensorWidget({ config }: { config?: any }) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ids.join(",")]);
+
+  // Sparkline-Verlauf je Sensor (#20 / iz3man) — nur Zahlen-Entities haben
+  // sinnvolle History; Fetch wie im HA-Widget über /api/ha/history.
+  useEffect(() => {
+    if (!showSparkline || ids.length === 0) return;
+    const controller = new AbortController();
+    let cancelled = false;
+    const fetchHistories = async () => {
+      const next: Record<string, number[]> = {};
+      await Promise.all(
+        ids.map(async (id) => {
+          try {
+            const res = await fetch(
+              `/api/ha/history?entityId=${encodeURIComponent(id)}&hours=${sparklineHours}`,
+              { signal: controller.signal },
+            );
+            if (!res.ok) return;
+            const data = await res.json();
+            const values: number[] = Array.isArray(data.series)
+              ? data.series.map((p: any) => p.v).filter((v: any) => Number.isFinite(v))
+              : [];
+            if (values.length > 1) next[id] = values;
+          } catch {}
+        }),
+      );
+      if (!cancelled) setHistories(next);
+    };
+    fetchHistories();
+    const interval = setInterval(fetchHistories, 5 * 60 * 1000);
+    return () => {
+      cancelled = true;
+      controller.abort();
+      clearInterval(interval);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showSparkline, ids.join(","), sparklineHours]);
 
   if (ids.length === 0) {
     return (
@@ -125,9 +165,16 @@ export default function SensorWidget({ config }: { config?: any }) {
         {rows.map((r) => (
           <div
             key={r.key}
-            className="flex flex-col items-center justify-center text-center rounded-[0.8em] p-[0.6em] gap-[0.3em] overflow-hidden"
+            className="relative flex flex-col items-center justify-center text-center rounded-[0.8em] p-[0.6em] gap-[0.3em] overflow-hidden"
             style={glass.cardStyle}
           >
+            {showSparkline && histories[r.key] && (
+              <Sparkline
+                values={histories[r.key]}
+                color={r.color || (glass.isLight ? "#0ea5e9" : "#60a5fa")}
+                className="absolute inset-0 w-full h-full pointer-events-none opacity-40"
+              />
+            )}
             {iconEl(r, 1.3)}
             <div className="flex items-baseline gap-[0.1em] max-w-full">
               <span className="font-semibold leading-none truncate" style={{ fontSize: "1.7em", color: textMain }}>
@@ -150,9 +197,16 @@ export default function SensorWidget({ config }: { config?: any }) {
       {rows.map((r) => (
         <div
           key={r.key}
-          className="flex items-center gap-[0.6em] rounded-[0.8em] px-[0.7em] py-[0.5em] overflow-hidden"
+          className="relative flex items-center gap-[0.6em] rounded-[0.8em] px-[0.7em] py-[0.5em] overflow-hidden"
           style={glass.cardStyle}
         >
+          {showSparkline && histories[r.key] && (
+            <Sparkline
+              values={histories[r.key]}
+              color={r.color || (glass.isLight ? "#0ea5e9" : "#60a5fa")}
+              className="absolute inset-0 w-full h-full pointer-events-none opacity-40"
+            />
+          )}
           {iconEl(r, 1.5)}
           <span className="text-[0.82em] truncate flex-1" style={{ color: textSub }}>{r.label}</span>
           <div className="flex items-baseline gap-[0.1em] shrink-0">

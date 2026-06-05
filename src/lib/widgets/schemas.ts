@@ -167,6 +167,8 @@ const sensorConfig = baseConfig
     iconFrame: z.boolean().optional(),
     iconSize: z.number().optional(), // Icon-Größe-Faktor, 1 = Standard
     frameScale: z.number().optional(), // Kasten-Größe-Faktor, 1 = Standard
+    showSparkline: z.boolean().optional(),
+    sparklineHours: z.number().optional(),
     entities: z.array(sensorSlot).optional(),
   })
   .passthrough();

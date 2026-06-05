@@ -249,6 +249,37 @@ export function SensorInspector({ widget, updateConfig }: Props) {
       >
         <Plus size={16} /> {t("Sensor hinzufügen")}
       </button>
+
+      <div className="border-t border-white/10 pt-4 space-y-3">
+        <label className="flex items-center gap-3 cursor-pointer group">
+          <div className="relative">
+            <input
+              type="checkbox"
+              checked={cfg.showSparkline === true}
+              onChange={(e) => updateConfig(widget.i, "showSparkline", e.target.checked)}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-white/10 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+          </div>
+          <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">{t("Verlauf anzeigen (Sparkline)")}</span>
+        </label>
+        {cfg.showSparkline === true && (
+          <div>
+            <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
+              <span>{t("Zeitraum")}</span>
+              <span className="text-blue-400">{cfg.sparklineHours ?? 6}h</span>
+            </label>
+            <input
+              type="range" min="1" max="48" step="1" value={cfg.sparklineHours ?? 6}
+              onChange={(e) => updateConfig(widget.i, "sparklineHours", parseInt(e.target.value))}
+              className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
+            />
+            <p className="text-xs text-white/40 mt-1.5 px-1">
+              {t("Nur Zahlen-Entities (Sensoren) haben einen sinnvollen Verlauf. HA-History muss aktiv sein.")}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
