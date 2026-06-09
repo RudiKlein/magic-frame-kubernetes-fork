@@ -136,7 +136,23 @@ export async function POST(req: NextRequest) {
        await prisma.dashboard.upsert({
           where: { id: safeId },
           update: { name }, // bestehender View: nur Name, Wallpaper bleibt unangetastet
-          create: { id: safeId, name, wallpaper: DEFAULT_WALLPAPER as any, settings: { orientation: orient } }
+          create: {
+             id: safeId,
+             name,
+             wallpaper: DEFAULT_WALLPAPER as any,
+             settings: { orientation: orient },
+             // Starter-Widgets direkt in die DB seeden statt über einen Client-
+             // Fallback. Sonst tauchen die Defaults bei einem BEWUSST geleerten
+             // View wieder auf, weil leeres Layout sonst nicht von "neu, nie
+             // konfiguriert" zu unterscheiden ist (#27).
+             widgets: {
+                create: [
+                   { id: `${safeId}_clk`, type: "ClockWidget.tsx", x: 0, y: 0, w: 6, h: 4, bgOpacity: 20, config: {} },
+                   { id: `${safeId}_cal`, type: "CalendarWidget.tsx", x: 0, y: 4, w: 6, h: 6, bgOpacity: 20, config: {} },
+                   { id: `${safeId}_wth`, type: "WeatherWidget.tsx", x: 0, y: 10, w: 12, h: 6, bgOpacity: 50, config: {} },
+                ],
+             },
+          }
        });
     }
 

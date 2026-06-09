@@ -411,7 +411,7 @@ export default function ViewEditor({
     fetch(`/api/layout/get?dashboardId=${encodeURIComponent(viewId)}&t=${Date.now()}`, { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
-        if (data.layout && data.layout.length > 0) {
+        if (Array.isArray(data.layout)) {
           const populated = data.layout.map((item: any) => ({
             ...item,
             config: item.config?.fontSize ? item.config : { fontSize: 20, fontFamily: "Inter" },

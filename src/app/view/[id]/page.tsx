@@ -120,7 +120,11 @@ export default function DashboardView({ params }: { params: Promise<{ id: string
     try {
       const res = await fetch(`/api/layout/get?dashboardId=${effectiveIdRef.current}&t=${Date.now()}`, { cache: 'no-store' });
       const data = await res.json();
-      if (data.layout && data.layout.length > 0) {
+      // Array (auch leer) = gültiges Layout des Views → übernehmen. Ein leeres
+      // Array ist ein bewusst geleerter View und darf NICHT die Defaults
+      // zurückholen (#27). Nur null (Dashboard existiert nicht) löst den
+      // Fallback unten aus.
+      if (Array.isArray(data.layout)) {
         setLayout((prev: any[]) => objectsEqual(prev, data.layout) ? prev : data.layout);
         
         setUserHiddenWidgets(prev => {

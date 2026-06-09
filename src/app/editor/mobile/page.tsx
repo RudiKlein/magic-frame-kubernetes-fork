@@ -89,7 +89,7 @@ function MobileEditorInner() {
     })
       .then((res) => res.json())
       .then((data) => {
-        if (data.layout && data.layout.length > 0) {
+        if (Array.isArray(data.layout)) {
           const populatedLayout = data.layout.map((item: any) => ({
             ...item,
             config: item.config?.fontSize

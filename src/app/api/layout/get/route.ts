@@ -19,7 +19,9 @@ export async function GET(req: NextRequest) {
     });
 
     if (!dashboard) {
-       return NextResponse.json({ layout: [], wallpaper: null, settings: null }, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
+       // layout: null signalisiert "Dashboard existiert nicht" — abgegrenzt vom
+       // gültigen leeren Layout ([]), das ein bewusst geleerter View liefert (#27).
+       return NextResponse.json({ layout: null, wallpaper: null, settings: null }, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
     }
 
     // Map to react-grid-layout format. Return the label verbatim (empty stays
@@ -47,6 +49,6 @@ export async function GET(req: NextRequest) {
     }, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ layout: [], wallpaper: null, settings: null });
+    return NextResponse.json({ layout: null, wallpaper: null, settings: null });
   }
 }
