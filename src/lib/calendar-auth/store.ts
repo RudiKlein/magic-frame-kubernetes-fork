@@ -2,6 +2,7 @@ import "server-only";
 import { PrismaClient } from "@prisma/client";
 import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { getCalendarOAuthConfig } from "./credentials";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
@@ -115,8 +116,11 @@ export async function getFreshAccessToken(accountId: string, userId: string): Pr
 }
 
 async function refreshGoogleToken(refreshToken: string) {
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  // Credentials DB-first lesen (wie der Connect-Pfad), NICHT nur aus env —
+  // sonst scheitert der Refresh bei jedem, der die Client-ID/Secret über die
+  // UI eingetragen hat (process.env ist dann leer → Token-Verlust nach ~1h). (#32)
+  const { googleClientId: clientId, googleClientSecret: clientSecret } =
+    await getCalendarOAuthConfig();
   if (!clientId || !clientSecret) return null;
 
   const res = await fetch("https://oauth2.googleapis.com/token", {
@@ -135,8 +139,9 @@ async function refreshGoogleToken(refreshToken: string) {
 }
 
 async function refreshMicrosoftToken(refreshToken: string) {
-  const clientId = process.env.MS_CLIENT_ID;
-  const clientSecret = process.env.MS_CLIENT_SECRET;
+  // Credentials DB-first lesen (wie der Connect-Pfad), nicht nur aus env. (#32)
+  const { msClientId: clientId, msClientSecret: clientSecret } =
+    await getCalendarOAuthConfig();
   if (!clientId || !clientSecret) return null;
 
   const res = await fetch("https://login.microsoftonline.com/common/oauth2/v2.0/token", {
