@@ -665,6 +665,8 @@ export const EN: Record<string, string> = {
   "HA Entity-ID": "HA entity ID",
   "Service (domain.service)": "Service (domain.service)",
   "Beispiele:": "Examples:",
+  "Service-Daten (JSON, optional)": "Service data (JSON, optional)",
+  "Für Services mit Parametern, z.B.": "For services with parameters, e.g.",
   "Webhook-URL (POST)": "Webhook URL (POST)",
 
   // ── Companion inspectors ──

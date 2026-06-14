@@ -27,11 +27,24 @@ async function runButtonAction(slot: any, longPress: boolean) {
         if (!entity || !service) return;
         const parts = service.split(".");
         if (parts.length !== 2) return;
+        // Optionale Service-Daten (JSON) — z.B. {"brightness":128} für
+        // light.turn_on, {"value":1} für number.set_value, {"temperature":21}
+        // für climate.set_temperature. Ungültiges JSON wird still ignoriert,
+        // der Service-Call geht dann ohne Daten raus (#30).
+        const rawData = longPress ? slot.longPressServiceData : slot.haServiceData;
+        let data: any = undefined;
+        if (rawData && String(rawData).trim()) {
+            try {
+                data = JSON.parse(rawData);
+            } catch {
+                console.error("HA-Service: ungültiges JSON in Service-Daten", rawData);
+            }
+        }
         try {
             await fetch("/api/ha/action", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ entityId: entity, domain: parts[0], service: parts[1] }),
+                body: JSON.stringify({ entityId: entity, domain: parts[0], service: parts[1], data }),
             });
         } catch (e) {
             console.error("HA-Service failed", e);
@@ -245,10 +258,12 @@ export default function ButtonWidget({ config = {} }: ButtonWidgetProps) {
           targetsConfig: targets,
           haEntity: config[`haEntity${suffix}`],
           haService: config[`haService${suffix}`],
+          haServiceData: config[`haServiceData${suffix}`],
           webhook: config[`webhook${suffix}`],
           longPressAction: config[`longPressAction${suffix}`] || 'none',
           longPressEntity: config[`longPressEntity${suffix}`],
           longPressService: config[`longPressService${suffix}`],
+          longPressServiceData: config[`longPressServiceData${suffix}`],
           longPressWebhook: config[`longPressWebhook${suffix}`],
           customColor: config[`color${suffix}`] || config.color
       };

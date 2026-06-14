@@ -251,6 +251,16 @@ function ActionEditor({
             className="w-full bg-black border border-white/10 text-white text-sm font-mono rounded-lg p-2 focus:outline-none focus:border-cyan-500"
           />
           <p className="text-[11px] text-white/40 mt-1">{t("Beispiele:")} <code>script.foo</code>, <code>scene.movie_time</code>, <code>light.turn_on</code></p>
+
+          <label className="text-xs font-medium text-white/70 block mb-1 mt-3">{t("Service-Daten (JSON, optional)")}</label>
+          <input
+            type="text"
+            value={(activeWidget.config as any)?.[k("haServiceData")] || ""}
+            onChange={(e) => updateConfig(activeWidget.i, k("haServiceData"), e.target.value)}
+            placeholder={'{"brightness": 128}'}
+            className="w-full bg-black border border-white/10 text-white text-sm font-mono rounded-lg p-2 focus:outline-none focus:border-cyan-500"
+          />
+          <p className="text-[11px] text-white/40 mt-1">{t("Für Services mit Parametern, z.B.")} <code>{'{"value":1}'}</code>, <code>{'{"temperature":21}'}</code>, <code>{'{"brightness":128}'}</code></p>
         </div>
       )}
 
