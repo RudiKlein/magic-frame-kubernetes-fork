@@ -32,6 +32,16 @@ const isValidFeed = (f: any): boolean => {
   return typeof f.accountId === "string" && f.accountId.trim() !== "";
 };
 
+// Agenda fija (showEmptyDays): cuántos eventos se piden a la API para la
+// ventana de 3 días, independiente del límite por día que configura el
+// usuario. Tiene que ser un valor fijo y generoso, no `limit * 3` — si
+// dependiera del límite por día, un valor bajo (p.ej. 1) haría que un solo
+// día con varios eventos agote el cupo global y los días siguientes se
+// muestren como vacíos aunque tengan eventos reales (route.ts sigue
+// cortando globalmente, no por día). El corte por día sigue siendo 100%
+// client-side, usando `limit`.
+const EMPTY_DAYS_FETCH_LIMIT = 60;
+
 export default function CalendarWidget({ config, onVisibilityChange }: { config?: any, onVisibilityChange?: (isVisible: boolean) => void }) {
   const { locale, t } = useLocale();
   const dfLocale = locale === "en" ? enUS : de;
@@ -70,11 +80,9 @@ export default function CalendarWidget({ config, onVisibilityChange }: { config?
       try {
         const url = new URL("/api/calendar", window.location.origin);
         url.searchParams.set("feeds", JSON.stringify(feeds));
-        // Agenda fija (showEmptyDays): ventana siempre de 3 días (hoy/+1/+2)
-        // y el límite se aplica por día en el cliente, no en total — se pide
-        // 3x para tener candidatos de sobra si un solo día concentra todo.
+        // Agenda fija (showEmptyDays): ventana siempre de 3 días (hoy/+1/+2).
         const effectiveDays = showEmptyDays ? 3 : days;
-        const effectiveLimit = showEmptyDays ? limit * 3 : limit;
+        const effectiveLimit = showEmptyDays ? EMPTY_DAYS_FETCH_LIMIT : limit;
         url.searchParams.set("limit", String(effectiveLimit));
         url.searchParams.set("days", String(effectiveDays));
         const res = await fetch(url.toString(), { signal: controller.signal });
