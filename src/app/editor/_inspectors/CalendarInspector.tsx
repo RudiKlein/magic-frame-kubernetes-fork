@@ -14,6 +14,7 @@ export default function CalendarInspector({
   updateConfig,
 }: CalendarInspectorProps) {
   const t = useT();
+  const showEmptyDays = (activeWidget.config as any)?.showEmptyDays || false;
   return (
     <div className="space-y-4">
        <FeedsEditor widget={activeWidget} updateConfig={updateConfig} />
@@ -30,7 +31,7 @@ export default function CalendarInspector({
        </div>
        <div>
           <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
-             <span>{t("Max. Termine anzeigen")}</span>
+             <span>{showEmptyDays ? t("Max. Termine pro Tag") : t("Max. Termine anzeigen")}</span>
              <span className="text-blue-400">{activeWidget.config?.limit || 5}</span>
           </label>
           <input
@@ -50,6 +51,7 @@ export default function CalendarInspector({
              className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-blue-500 bg-white/10"
           />
        </div>
+       {!showEmptyDays && (
        <div>
           <label className="text-sm font-medium text-white/80 mb-2 flex justify-between">
              <span>{t("Tage im Voraus (Zeitfenster)")}</span>
@@ -61,6 +63,7 @@ export default function CalendarInspector({
              className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-green-500 bg-white/10"
           />
        </div>
+       )}
        <div>
           <label className="text-sm font-medium text-white/80 block mb-2">{t("Akzentfarbe (Hex, z.B. #FF0055)")}</label>
           <div className="flex gap-3">
@@ -80,18 +83,47 @@ export default function CalendarInspector({
           <div className="relative flex items-center justify-center">
              <input
                 type="checkbox"
-                checked={activeWidget.config?.hideOnEmpty || false}
-                onChange={(e) => updateConfig(activeWidget.i, 'hideOnEmpty', e.target.checked)}
+                checked={showEmptyDays}
+                onChange={(e) => {
+                   const checked = e.target.checked;
+                   updateConfig(activeWidget.i, 'showEmptyDays', checked);
+                   if (checked && activeWidget.config?.hideOnEmpty) {
+                      updateConfig(activeWidget.i, 'hideOnEmpty', false);
+                   }
+                }}
                 className="appearance-none w-5 h-5 border border-white/20 rounded bg-black checked:bg-violet-500 checked:border-violet-500 transition-colors"
              />
-             {activeWidget.config?.hideOnEmpty && (
+             {showEmptyDays && (
                 <svg className="w-3.5 h-3.5 text-white absolute pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
              )}
           </div>
-          <span className="text-sm text-white/80 group-hover:text-white transition-colors">{t("Widget kompett ausblenden, wenn leer")}</span>
+          <span className="text-sm text-white/80 group-hover:text-white transition-colors">{t("Leere Tage anzeigen")}</span>
        </label>
+
+       <div>
+          <label className={`flex items-center gap-3 mt-2 group ${showEmptyDays ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}>
+             <div className="relative flex items-center justify-center">
+                <input
+                   type="checkbox"
+                   checked={activeWidget.config?.hideOnEmpty || false}
+                   disabled={showEmptyDays}
+                   onChange={(e) => updateConfig(activeWidget.i, 'hideOnEmpty', e.target.checked)}
+                   className="appearance-none w-5 h-5 border border-white/20 rounded bg-black checked:bg-violet-500 checked:border-violet-500 transition-colors disabled:cursor-not-allowed"
+                />
+                {activeWidget.config?.hideOnEmpty && (
+                   <svg className="w-3.5 h-3.5 text-white absolute pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                   </svg>
+                )}
+             </div>
+             <span className="text-sm text-white/80 group-hover:text-white transition-colors">{t("Widget kompett ausblenden, wenn leer")}</span>
+          </label>
+          {showEmptyDays && (
+             <p className="text-[11px] text-white/40 mt-1 ml-8">{t("Nicht verfügbar zusammen mit 'Leere Tage anzeigen'")}</p>
+          )}
+       </div>
 
        <label className="flex items-center gap-3 cursor-pointer mt-2 group">
           <div className="relative flex items-center justify-center">
