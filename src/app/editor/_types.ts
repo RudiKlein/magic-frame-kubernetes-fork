@@ -72,6 +72,12 @@ export interface WidgetLayoutItem {
     cardTheme?: 'dark' | 'light';
     cardBlur?: number;
     design?: 'cards' | 'minimal';
+    // #6 HA-triggered visibility (baseConfig)
+    showWhenEntity?: string;
+    showWhenState?: string;
+    autoHideSeconds?: number;
+    // #33 calendar time-format override
+    calendarTimeFormat?: 'auto' | '12h' | '24h';
   };
 }
 
@@ -112,6 +118,7 @@ export interface WallpaperConfig {
   kenBurnsIntensity?: number; // Ken-Burns-Zielzoom in % (Default 15 = scale 1.15)
   splitMode?: "off" | "auto" | "grid2" | "grid4"; // Split-View (#16/#17, Schritt 3)
   showTimer?: boolean;
+  bgColor?: string; // Vollfarb-Hintergrund (source === "color")
 }
 
 // ── Widget display titles ────────────────────────────────────────────────
