@@ -25,6 +25,11 @@ permissions:
 jobs:
   build-push:
     runs-on: ubuntu-latest
+    # `secrets` darf NICHT direkt in einem step-`if:` stehen (GitHub-Limitierung
+    # → "workflow file issue"). Darum hier einmal als Job-env-Flag heben und
+    # unten via `env.HAS_DOCKERHUB` prüfen.
+    env:
+      HAS_DOCKERHUB: ${{ secrets.DOCKERHUB_USERNAME != '' }}
     # arm64 unter QEMU-Emulation ist langsam (xcaddy + Next.js build),
     # aber das passiert nur einmal pro Release, nicht pro User.
     timeout-minutes: 90
@@ -53,10 +58,21 @@ jobs:
       - name: Image-Tags zusammenstellen
         id: meta
         run: |
-          IMG="ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}"
-          TAGS="${IMG}:latest"
+          # Push to BOTH registries in one build: ghcr.io (no pull rate limit,
+          # robust default) + Docker Hub (discoverability). The Docker Hub block
+          # is only added when DOCKERHUB_USERNAME is set, so the workflow still
+          # works for forks that haven't configured Hub.
+          GHCR="ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}"
+          TAGS="${GHCR}:latest"
           if [ -n "${{ steps.ver.outputs.version }}" ]; then
-            TAGS="${TAGS},${IMG}:${{ steps.ver.outputs.version }}"
+            TAGS="${TAGS},${GHCR}:${{ steps.ver.outputs.version }}"
+          fi
+          if [ -n "${{ secrets.DOCKERHUB_USERNAME }}" ]; then
+            HUB="docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}"
+            TAGS="${TAGS},${HUB}:latest"
+            if [ -n "${{ steps.ver.outputs.version }}" ]; then
+              TAGS="${TAGS},${HUB}:${{ steps.ver.outputs.version }}"
+            fi
           fi
           echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
 
@@ -69,6 +85,15 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Only logs in when DOCKERHUB_USERNAME is configured — forks without it
+      # skip this and just push to ghcr.
+      - name: Login bei Docker Hub
+        if: env.HAS_DOCKERHUB == 'true'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build + Push (amd64 + arm64)
         uses: docker/build-push-action@v6
